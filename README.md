@@ -1,5 +1,5 @@
 # Fantnel-Pro
-介绍：自动下载 Fantnel 并借助 Photino.NET 实现高效 浏览器
+介绍：自动下载 [Fantnel](https://github.com/NirvanaTec/fantnel/) 并借助 Photino.NET 实现高效 浏览器
 
 ### 如何参与
 ```text
