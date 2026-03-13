@@ -12,7 +12,6 @@ using Photino.NET;
 namespace FantnelPro;
 
 public class Program {
-    
     private static int _maxRestarts = 4;
     private static Process? _process;
 
@@ -35,6 +34,10 @@ public class Program {
             .SetUseOsDefaultSize(false)
             .RegisterWindowCreatedHandler((_, _) => {
                 WindowHandler.SetWindowRoundedCorners(20);
+            }).RegisterWindowClosingHandler((_, _) => {
+                _maxRestarts = 0;
+                _process?.Kill();
+                return false;
             });
 
         _args = args;
@@ -91,10 +94,12 @@ public class Program {
             } catch (Exception e) {
                 Console.WriteLine("连接测试失败: {0}", e.Message);
             }
+
             Thread.Sleep(1000);
         }
-        // Window?.Load(url);
-        Window?.Load("http://localhost:5173/");
+
+        Window?.Load(url);
+        // Window?.Load("http://localhost:5173/");
     }
 
     public static void SetDescription(string description)
