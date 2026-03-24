@@ -3,6 +3,9 @@
 namespace FantnelPro.Utils.Update;
 
 public static class UpdateTools {
+    
+    private static readonly string SystemArch = Tools.DetectOperatingSystemMode() + "." + Tools.DetectArchitectureMode();
+    
     // 检查更新
     public static async Task CheckUpdate(string[] args)
     {
@@ -25,7 +28,7 @@ public static class UpdateTools {
             //     break;
             // }
             // 正常检查
-            await CheckUpdate("static.pro", "Fantnel-Pro", true);
+            await CheckUpdate("pro." + SystemArch, "Fantnel-Pro", true);
         }
     }
 
@@ -62,12 +65,10 @@ public static class UpdateTools {
 
     public static async Task CheckUpdate(Action action)
     {
-        var system = Tools.DetectOperatingSystemMode();
-        var arch = Tools.DetectArchitectureMode();
-        var mode = system + "." + arch;
-        await CheckUpdate(mode, "Fantnel", false, true, "fantnel");
+        await CheckUpdate(SystemArch, "Fantnel", false, true, "fantnel");
         await CheckUpdate("static", "Fantnel", false, true, "fantnel");
-        await CheckUpdate("static." + system, "Fantnel", false, true, "fantnel");
+        await CheckUpdate("static." + Tools.DetectOperatingSystemMode(), "Fantnel", false, true, "fantnel");
         action.Invoke();
     }
+    
 }

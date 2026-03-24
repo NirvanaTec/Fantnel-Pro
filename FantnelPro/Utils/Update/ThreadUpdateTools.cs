@@ -16,7 +16,6 @@ public static class ThreadUpdateTools {
      */
     public static async Task CheckUpdate(JsonArray jsonArray, string name, bool safeMode = false, string path = "")
     {
-        var downloadSize = 0;
         var index = 0;
 
         foreach (var item in jsonArray) {
@@ -58,14 +57,10 @@ public static class ThreadUpdateTools {
             // 请求速限制 1 秒 / 12次 ≈ 0.083
             // 83 - 15 = 68ms
             Thread.Sleep(68);
-            if (pathValue.EndsWith(".dll")) {
-                downloadSize++;
-            }
-
             await DownloadWithRetryAsync(url, resourcesPath1, name, index++, jsonArray.Count);
         }
 
-        if (safeMode && downloadSize > 0) {
+        if (safeMode) {
             Console.WriteLine("正在更新核心资源，这会自动重启[1次]，请稍后...");
             var scriptPath = PathUtil.ScriptPath;
             await Tools.SaveShellScript(scriptPath, GenerateUpdateScript());
@@ -82,16 +77,16 @@ public static class ThreadUpdateTools {
     private static string GenerateUpdateScript()
     {
         var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Tools.GetProcessLocation() : Tools.GetProcessArguments();
-        var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), exeName);
+        var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), exeName, Environment.GetCommandLineArgs()[0]);
         Console.WriteLine("更新脚本: {0}", updateScript);
         return updateScript;
     }
 
-    private static string GenerateUpdateScript(string tempDir, string targetDir, string exeName)
+    private static string GenerateUpdateScript(string tempDir, string targetDir, string exeName, string fileToDelete)
     {
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? $"timeout /t 1 /nobreak\r\nxcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\r\nstart \"\" \"{exeName}\""
-            : $"sleep 1\ncp -r \"{tempDir}/.\" \"{targetDir}\"\ndotnet \"{exeName}\" & rm -rf \"{tempDir}\"";
+            ? $"timeout /t 1 /nobreak\r\nxcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\r\ndel \"{fileToDelete}\"\r\nstart \"\" \"{exeName}\""
+            : $"sleep 1\ncp -r \"{tempDir}/.\" \"{targetDir}\"\nrm -f \"{fileToDelete}\"\ndotnet \"{exeName}\" & rm -rf \"{tempDir}\"";
     }
 
     /// <summary>

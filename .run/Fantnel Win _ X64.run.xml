@@ -1,0 +1,10 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Fantnel Win | X64" type="DotNetFolderPublish" factoryName="Publish to folder">
+    <riderPublish configuration="Release" include_all_content_for_self_extract="true" include_native_libs_for_self_extract="true" platform="Any CPU" produce_single_file="true" target_folder="$PROJECT_DIR$/FantnelPro/bin/Release/net9.0/publish/pro.win.x64" target_framework="net9.0" uuid_high="5423110579317900697" uuid_low="4321449825716247151">
+      <runtimes>
+        <item value="win-x64" />
+      </runtimes>
+    </riderPublish>
+    <method v="2" />
+  </configuration>
+</component>

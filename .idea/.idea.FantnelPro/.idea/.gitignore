@@ -2,9 +2,9 @@
 /shelf/
 /workspace.xml
 # Rider 忽略的文件
-/contentModel.xml
 /projectSettingsUpdater.xml
-/.idea.FantChromium.iml
+/contentModel.xml
+/.idea.FantnelPro.iml
 /modules.xml
 # 已忽略包含查询文件的默认文件夹
 /queries/

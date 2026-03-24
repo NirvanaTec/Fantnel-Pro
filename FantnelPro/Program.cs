@@ -138,7 +138,7 @@ public class Program {
             SetDescription("连接失败！");
         }
 
-        // Window?.Load(url);
+        Window?.Load(url);
         // Window?.Load("http://localhost:5173/");
     }
 

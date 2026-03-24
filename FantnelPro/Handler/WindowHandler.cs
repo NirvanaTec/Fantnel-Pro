@@ -9,13 +9,10 @@ namespace FantnelPro.Handler;
 public partial class WindowHandler {
     private const uint DwmwaWindowCornerPreference = 33;
     private const int DwmwcpRound = 2;
-    private static readonly Lock DragLock = new();
 
     // Windows DWM API for rounded corners
     [LibraryImport("dwmapi.dll")]
     private static partial void DwmSetWindowAttribute(IntPtr hwnd, uint dwAttribute, ref int pvAttribute, uint cbAttribute);
-
-    // 用绝对坐标计算
 
     private static Point _dragAnchorWindow;
     private static Point _dragAnchorMouse;
@@ -27,14 +24,17 @@ public partial class WindowHandler {
         }
         // 拖拽开始：记录窗口位置
         _dragAnchorWindow = Program.Window.Location;
+        _dragAnchorMouse.X = 0;
+        _dragAnchorMouse.Y = 0;
         return null;
     }
 
     public static string? DragMove(JsonElement? jsonElement)
     {
         var entity = GetEntity<EntityDrag>(jsonElement);
-        if (entity == null || Program.Window == null) return null;
-
+        if (entity == null || Program.Window == null) {
+            return null;
+        }
         // 用 JS 传来的绝对坐标 - 锚点 = 新位置
         // 关键：第一次 mousemove 时记录鼠标锚点
         if (_dragAnchorMouse is { X: 0, Y: 0 })
@@ -42,7 +42,7 @@ public partial class WindowHandler {
             _dragAnchorMouse = new Point(entity.Sx, entity.Sy);
             return null;
         }
-
+        // Console.WriteLine("DragMove: {0}, {1}, {2}", _dragAnchorWindow.X, entity.Sx, _dragAnchorMouse.X);
         Program.Window.MoveTo(
             _dragAnchorWindow.X + (entity.Sx - _dragAnchorMouse.X),
             _dragAnchorWindow.Y + (entity.Sy - _dragAnchorMouse.Y)
