@@ -6,5 +6,5 @@ public enum ErrorCode {
     WindowNotInitialized = 2,
     InvalidMessageType = 3,
     SetUpdateTitle = 4,
-    InitializeWindow = 5,
+    InitializeWindow = 5
 }

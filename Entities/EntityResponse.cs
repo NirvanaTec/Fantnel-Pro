@@ -1,9 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace FantnelPro.Entities;
 
 public class EntityResponseBase {
-    
     [JsonPropertyName("code")]
     public int? Code { get; set; }
 
@@ -19,4 +19,7 @@ public class EntityResponse<T> : EntityResponseBase {
 public class EntityRequestAction {
     [JsonPropertyName("action")]
     public required string Action { get; set; }
+
+    [JsonPropertyName("data")]
+    public JsonElement? Data { get; set; }
 }

@@ -15,12 +15,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Photino.NET" Version="4.0.16" />
+        <PackageReference Include="Photino.NET" Version="4.0.16"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Content Remove="wwwroot\**" />
-        <None Remove="wwwroot\**" />
+        <Content Remove="wwwroot\**"/>
+        <None Remove="wwwroot\**"/>
         <EmbeddedResource Include="wwwroot\**">
             <CopyToOutputDirectory>Never</CopyToOutputDirectory>
         </EmbeddedResource>

@@ -4,7 +4,6 @@ using FantnelPro.Entities;
 namespace FantnelPro.Utils.CodeTools;
 
 public static class Code {
-    
     public static EntityResponse<string> ToJson(Exception t)
     {
         var json = new EntityResponse<string> {
@@ -18,7 +17,7 @@ public static class Code {
     {
         return JsonSerializer.Serialize(ToJson1(code, data));
     }
-    
+
     public static EntityResponse<object> ToJson1(ErrorCode code, object? data = null)
     {
         return ToJson1(code, new EntityResponse<object>(), data);

@@ -5,7 +5,6 @@ using System.Text.Json.Nodes;
 namespace FantnelPro.Utils.Update;
 
 public static class ThreadUpdateTools {
-    
     private static readonly HttpClient HttpClient = new();
 
     /**
@@ -36,7 +35,7 @@ public static class ThreadUpdateTools {
             // 修复路径
             pathValue = pathValue.Replace('\\', Path.DirectorySeparatorChar);
 
-            var resourcesPath = AppDomain.CurrentDomain.BaseDirectory;
+            var resourcesPath = Directory.GetCurrentDirectory();
 
             if (!string.IsNullOrEmpty(path)) {
                 resourcesPath = Path.Combine(resourcesPath, path);
@@ -83,7 +82,7 @@ public static class ThreadUpdateTools {
     private static string GenerateUpdateScript()
     {
         var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Tools.GetProcessLocation() : Tools.GetProcessArguments();
-        var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, AppDomain.CurrentDomain.BaseDirectory, exeName);
+        var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), exeName);
         Console.WriteLine("更新脚本: {0}", updateScript);
         return updateScript;
     }
@@ -165,6 +164,7 @@ public static class ThreadUpdateTools {
         if (sha256 == null) {
             return false;
         }
+
         var expectedHash = sha256.GetValue<string>();
         var actualHash = Tools.ComputeSha256(filePath);
         return !string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase);

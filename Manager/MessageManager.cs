@@ -30,30 +30,21 @@ public class MessageManager {
             }
 
             Console.WriteLine("收到消息: action:{0}", request.Action);
-            
-            // window:drag 需要在 UI 线程同步执行，不能放在 Task.Run 中
-            if (request.Action == "window:drag")
-            {
-                var response = WindowHandler.StartDrag();
-                if (response != null) {
-                    var json = JsonSerializer.Serialize(response);
-                    await window.SendWebMessageAsync(json);   
-                }
-            } else {
-                _ = Task.Run(() => {
-                    var response = request.Action switch {
-                        "fantnel:init" => Code.ToJson(ErrorCode.InitializeWindow),
-                        "window:init" => Program.Init(),
-                        "window:minimize" => WindowHandler.Minimize(),
-                        "window:close" => WindowHandler.Close(),
-                        _ => throw new ErrorCodeException(ErrorCode.InvalidMessageType)
-                    };
-                    if (response != null) {
-                        window.SendWebMessage(response);   
-                    }
-                });
-            }
 
+            _ = Task.Run(() => {
+                var response = request.Action switch {
+                    "window:drag-start" => WindowHandler.StartDragInit(),
+                    "window:drag-move" => WindowHandler.DragMove(request.Data),
+                    "fantnel:init" => Code.ToJson(ErrorCode.InitializeWindow),
+                    "window:init" => Program.Init(),
+                    "window:minimize" => WindowHandler.Minimize(),
+                    "window:close" => WindowHandler.Close(),
+                    _ => throw new ErrorCodeException(ErrorCode.InvalidMessageType)
+                };
+                if (response != null) {
+                    window.SendWebMessage(response);
+                }
+            });
         } catch (Exception ex) {
             try {
                 var response = OnException(ex);
@@ -93,6 +84,7 @@ public class MessageManager {
             if (index++ > 8) {
                 break;
             }
+
             array.Add(stackTraceFrame.ToJsonDocument());
         }
 
@@ -111,6 +103,7 @@ public class MessageManager {
                         jsonArray.Add(stackTrace);
                     }
                 }
+
                 return jsonArray.Count == 0 ? null : jsonArray;
             }
             case ErrorCodeException errorCodeException:
@@ -119,5 +112,4 @@ public class MessageManager {
                 return null;
         }
     }
-    
 }

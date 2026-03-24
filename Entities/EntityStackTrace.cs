@@ -4,7 +4,6 @@ using System.Text.Json;
 namespace FantnelPro.Entities;
 
 public class EntityStackTrace {
-    
     public EntityStackTrace(StackFrame stackTrace)
     {
         var method = stackTrace.GetMethod();
@@ -34,5 +33,4 @@ public class EntityStackTrace {
         // (string.IsNullOrEmpty(File) && Line == 0) || 
         return Method.Length < 5;
     }
-    
 }

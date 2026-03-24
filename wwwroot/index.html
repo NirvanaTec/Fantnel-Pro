@@ -2,105 +2,178 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>渐变流体背景</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>涅槃科技</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        /* 重置默认边距和填充 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --bg: #08070f;
+            --glass: rgba(12, 11, 22, 0.52);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --pink: #ff77c8;
+            --violet: #a78bfa;
+            --cyan: #7defff;
+            --text-muted: rgba(255, 255, 255, 0.5);
+        }
+
         body {
-            min-height: 100vh; /* 让body至少占满整个视口高度 */
+            min-height: 100vh;
             display: flex;
-            justify-content: center; /* 水平居中内容 */
-            align-items: center; /* 垂直居中内容 */
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #0f0e17; /* 设置基础背景颜色 */
-            overflow: hidden; /* 隐藏溢出的动画元素 */
+            justify-content: center;
+            align-items: center;
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            overflow: hidden;
+            cursor: default;
+            user-select: none;
+            -webkit-app-region: drag;
         }
 
-        /* 创建一个覆盖全屏的绝对定位容器来放置动画背景 */
+        /* ── 背景动画层 ── */
         .fluid-gradient-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed;
+            inset: -50%;
+            width: 200%;
+            height: 200%;
             z-index: 0;
-
-            /* 核心：使用多层径向渐变叠加 */
-            background-image:
-                radial-gradient(circle at 20% 30%, rgba(255, 119, 194, 0.7) 0%, transparent 20%),
-                radial-gradient(circle at 80% 70%, rgba(128, 222, 255, 0.7) 0%, transparent 20%),
-                radial-gradient(circle at 50% 50%, rgba(66, 133, 244, 0.5) 0%, transparent 30%);
-
-            /* 应用关键帧动画，让每一层渐变都动起来 */
-            animation: fluidMove 10s ease-in-out infinite alternate;
+            pointer-events: none;
         }
 
-        /* 定义动画的关键帧 */
-        @keyframes fluidMove {
-            0% {
-                /* 初始位置 */
-                background-position: 
-                    20% 30%,
-                    80% 70%,
-                    50% 50%;
-                border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-            }
-            100% {
-                /* 结束位置，数值发生变化以产生流动感 */
-                background-position: 
-                    80% 10%,
-                    20% 90%,
-                    70% 30%;
-                border-radius: 30% 60% 70% 40% / 40% 70% 30% 60%;
-            }
-        }
-
-        /* 窗口控制按钮容器 */
-        .window-controls {
+        .blob {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            border-radius: 50%;
+            will-change: transform;
+            mix-blend-mode: screen;
+        }
+
+        .blob-1 {
+            width: 520px;
+            height: 520px;
+            background: radial-gradient(circle at 40% 40%,
+            rgba(255, 119, 200, 0.85) 0%,
+            rgba(255, 119, 200, 0.25) 40%,
+            transparent 70%);
+            filter: blur(70px);
+            top: 5%;
+            left: 10%;
+            animation: drift1 16s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+        }
+
+        .blob-2 {
+            width: 460px;
+            height: 460px;
+            background: radial-gradient(circle at 60% 40%,
+            rgba(128, 222, 255, 0.8) 0%,
+            rgba(128, 222, 255, 0.2) 40%,
+            transparent 70%);
+            filter: blur(65px);
+            top: 35%;
+            right: 8%;
+            animation: drift2 18s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+        }
+
+        .blob-3 {
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle at 50% 50%,
+            rgba(100, 140, 255, 0.65) 0%,
+            rgba(167, 139, 250, 0.2) 40%,
+            transparent 70%);
+            filter: blur(60px);
+            bottom: 5%;
+            left: 30%;
+            animation: drift3 14s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+        }
+
+        /* 第四个小球增加层次 */
+        .blob-4 {
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle,
+            rgba(255, 200, 120, 0.5) 0%,
+            transparent 70%);
+            filter: blur(50px);
+            top: 60%;
+            left: 15%;
+            animation: drift4 20s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+        }
+
+        @keyframes drift1 {
+            0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+            25%  { transform: translate(140px, 90px) scale(1.12) rotate(5deg); }
+            50%  { transform: translate(-40px, 180px) scale(0.92) rotate(-3deg); }
+            75%  { transform: translate(100px, -20px) scale(1.08) rotate(4deg); }
+            100% { transform: translate(60px, 120px) scale(1.02) rotate(-2deg); }
+        }
+
+        @keyframes drift2 {
+            0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+            25%  { transform: translate(-120px, -80px) scale(1.1) rotate(-6deg); }
+            50%  { transform: translate(60px, -140px) scale(0.88) rotate(4deg); }
+            75%  { transform: translate(-90px, 40px) scale(1.15) rotate(-2deg); }
+            100% { transform: translate(-50px, 80px) scale(0.95) rotate(3deg); }
+        }
+
+        @keyframes drift3 {
+            0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+            25%  { transform: translate(100px, -110px) scale(1.18) rotate(7deg); }
+            50%  { transform: translate(-130px, 30px) scale(0.85) rotate(-5deg); }
+            75%  { transform: translate(40px, 90px) scale(1.1) rotate(3deg); }
+            100% { transform: translate(80px, -50px) scale(1.05) rotate(-4deg); }
+        }
+
+        @keyframes drift4 {
+            0%   { transform: translate(0, 0) scale(1); }
+            50%  { transform: translate(180px, -120px) scale(1.3); }
+            100% { transform: translate(80px, 60px) scale(0.85); }
+        }
+
+        /* ── 全局暗角 ── */
+        .vignette {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(8, 7, 15, 0.6) 100%);
+        }
+
+        /* ── 窗口控制按钮 ── */
+        .window-controls {
+            position: fixed;
+            top: 14px;
+            right: 14px;
             display: flex;
             gap: 8px;
-            z-index: 10;
+            z-index: 100;
+            -webkit-app-region: no-drag;
         }
 
-        /* 窗口控制按钮 */
         .window-control {
-            width: 14px;
-            height: 14px;
+            width: 13px;
+            height: 13px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
-            transition: all 0.2s ease;
             position: relative;
+            transition: all 0.2s ease;
+            outline: none;
         }
 
-        .window-control::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transition: opacity 0.2s ease;
+        .window-control:hover {
+            transform: scale(1.2);
         }
 
-        .window-control:hover::before {
-            opacity: 1;
+        .window-control:active {
+            transform: scale(0.9);
         }
 
-        /* 关闭按钮 - 红色 */
         .btn-close {
             background: #ff5f57;
         }
@@ -109,12 +182,24 @@
             background: #ff3b30;
         }
 
-        .btn-close::before {
-            background-image: linear-gradient(45deg, transparent 40%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.6) 60%, transparent 60%),
-                              linear-gradient(-45deg, transparent 40%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.6) 60%, transparent 60%);
+        .btn-close::after {
+            content: '×';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(0, 0, 0, 0);
+            transition: color 0.15s;
+            line-height: 1;
         }
 
-        /* 最小化按钮 - 绿色 */
+        .btn-close:hover::after {
+            color: rgba(80, 0, 0, 0.8);
+        }
+
         .btn-minimize {
             background: #28c940;
         }
@@ -123,122 +208,281 @@
             background: #13a82a;
         }
 
-        .btn-minimize::before {
+        .btn-minimize::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 7px;
             height: 2px;
-            width: 6px;
+            background: rgba(0, 0, 0, 0);
             border-radius: 1px;
-            background: rgba(0, 0, 0, 0.6);
+            transition: background 0.15s;
         }
 
-        /* 页面主要内容的样式 */
+        .btn-minimize:hover::after {
+            background: rgba(0, 60, 0, 0.7);
+        }
+
+        /* ── 内容卡片 ── */
         .content {
             position: relative;
+            z-index: 10;
             text-align: center;
             color: white;
-            padding: 2rem;
-            background: rgba(15, 14, 23, 0.7); /* 半透明背景色 */
-            backdrop-filter: blur(10px); /* 添加毛玻璃效果 */
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            z-index: 1;
-            pointer-events: none;
+            padding: 3.5rem 4rem;
+            background: var(--glass);
+            backdrop-filter: blur(32px) saturate(1.5);
+            -webkit-backdrop-filter: blur(32px) saturate(1.5);
+            border-radius: 28px;
+            border: 1px solid var(--glass-border);
+            box-shadow:
+                    0 24px 80px rgba(0, 0, 0, 0.5),
+                    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+                    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+            -webkit-app-region: no-drag;
+            animation: cardIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
         }
 
+        @keyframes cardIn {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.94);
+                filter: blur(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        /* ── Logo 区域 ── */
+        .logo-mark {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 1.6rem;
+            position: relative;
+        }
+
+        .logo-mark svg {
+            width: 100%;
+            height: 100%;
+            animation: logoSpin 8s linear infinite;
+        }
+
+        @keyframes logoSpin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        /* ── 标题 ── */
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, #ff77c8, #7defff);
-            -webkit-background-clip: text; /* 使渐变色应用于文字 */
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            background: linear-gradient(135deg, var(--pink), var(--violet), var(--cyan));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            letter-spacing: 0.08em;
+            animation: gradientShift 4s ease infinite;
         }
 
-        p {
-            font-size: 1.2rem;
-            max-width: 600px;
-            line-height: 1.6;
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50%      { background-position: 100% 50%; }
+        }
+
+        /* ── 加载指示器 ── */
+        .loader {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 24px;
+        }
+
+        .loader-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--pink), var(--violet));
+            animation: dotPulse 1.4s ease-in-out infinite;
+        }
+
+        .loader-dot:nth-child(2) {
+            animation-delay: 0.16s;
+            background: linear-gradient(135deg, var(--violet), var(--cyan));
+        }
+
+        .loader-dot:nth-child(3) {
+            animation-delay: 0.32s;
+            background: linear-gradient(135deg, var(--cyan), var(--pink));
+        }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% {
+                transform: scale(0.5);
+                opacity: 0.3;
+            }
+            40% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        /* ── 进度文字（由 JS 更新） ── */
+        .status-text {
+            margin-top: 1.2rem;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 0.06em;
+            min-height: 1.2em;
+            transition: opacity 0.3s ease;
+        }
+
+        /* ── 底部版本号 ── */
+        .version {
+            position: fixed;
+            bottom: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.68rem;
+            color: rgba(255, 255, 255, 0.15);
+            letter-spacing: 0.1em;
+            z-index: 10;
+            -webkit-app-region: no-drag;
         }
     </style>
 </head>
 <body>
-    <!-- 动画背景层 -->
-    <div class="fluid-gradient-bg" id="dragArea"></div>
 
-    <!-- 窗口控制按钮 -->
-    <div class="window-controls">
-        <button class="window-control btn-minimize" id="btnMinimize" title="最小化"></button>
-        <button class="window-control btn-close" id="btnClose" title="关闭"></button>
+<!-- 背景动画层 -->
+<div class="fluid-gradient-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+</div>
+
+<!-- 暗角 -->
+<div class="vignette"></div>
+
+<!-- 窗口控制 -->
+<div class="window-controls">
+    <button class="window-control btn-minimize" id="btnMinimize" title="最小化"></button>
+    <button class="window-control btn-close" id="btnClose" title="关闭"></button>
+</div>
+
+<!-- 主内容 -->
+<div class="content">
+    <div class="logo-mark">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#ff77c8"/>
+                    <stop offset="50%" stop-color="#a78bfa"/>
+                    <stop offset="100%" stop-color="#7defff"/>
+                </linearGradient>
+            </defs>
+            <!-- 抽象凤凰/涅槃符号 -->
+            <path d="M50 10 C30 25, 15 45, 20 65 C23 78, 35 88, 50 90 C65 88, 77 78, 80 65 C85 45, 70 25, 50 10Z"
+                  stroke="url(#logoGrad)" stroke-width="2" fill="none" opacity="0.6"/>
+            <path d="M50 25 C38 35, 28 50, 32 65 C34 73, 42 80, 50 82 C58 80, 66 73, 68 65 C72 50, 62 35, 50 25Z"
+                  stroke="url(#logoGrad)" stroke-width="1.5" fill="none" opacity="0.4"/>
+            <circle cx="50" cy="52" r="4" fill="url(#logoGrad)" opacity="0.8"/>
+        </svg>
     </div>
 
-    <!-- 页面内容层 -->
-    <div class="content">
-        <h1>涅槃科技</h1>
-        <p>正在加载中，请稍后...</p>
+    <h1>涅槃科技</h1>
+
+    <div class="loader">
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
+        <div class="loader-dot"></div>
     </div>
 
-    <script>
-        // 获取拖动区域
-        const dragArea = document.getElementById('dragArea');
+    <div class="status-text" id="statusText">正在初始化…</div>
+</div>
 
-        // 获取窗口控制按钮
-        const btnMinimize = document.getElementById('btnMinimize');
-        const btnClose = document.getElementById('btnClose');
+<div class="version">v1.0.0</div>
 
-        // 发送消息到后端的辅助函数
-        function sendMessage(action) {
-            const message = JSON.stringify({ action: action });
-            if (window.external && window.external.sendMessage) {
-                window.external.sendMessage(message);
-            }
+<script>
+    const btnMinimize = document.getElementById('btnMinimize');
+    const btnClose = document.getElementById('btnClose');
+    const statusText = document.getElementById('statusText');
+
+    function sendMessage(action, data) {
+        const message = JSON.stringify({ action, data });
+        if (window.external && window.external.sendMessage) {
+            window.external.sendMessage(message);
         }
+    }
 
-        // 接收后端消息的处理函数
-        function receiveMessage(message) {
-            try {
-                const response = JSON.parse(message);
-                if (response.code === 4) {
-                    const contentElement = document.querySelector('.content p');
-                    if (contentElement) {
-                        contentElement.textContent = response.data;
-                    }
-                }
-            } catch (e) {
-                console.error('消息解析失败:', e);
+    function receiveMessage(message) {
+        try {
+            const response = JSON.parse(message);
+            if (response.code === 4) {
+                statusText.textContent = response.data || '';
             }
+        } catch (e) {
+            console.error('消息解析失败:', e);
         }
+    }
 
-        // 注册接收消息的处理器
-        if (window.chrome && window.chrome.webview) {
-            window.chrome.webview.addEventListener('message', (event) => {
-                receiveMessage(event.data);
-            });
-        } else if (window.external) {
-            window.external.receiveMessage = receiveMessage;
+    if (window.external && window.external.receiveMessage) {
+        window.external.receiveMessage(receiveMessage);
+    }
+
+    sendMessage('window:init');
+
+    btnMinimize.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sendMessage('window:minimize');
+    });
+
+    btnClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sendMessage('window:close');
+    });
+
+    // ── 拖拽 ──
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    document.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.window-controls') || e.target.closest('.content')) {
+            return;
         }
-        
-        sendMessage('window:init');
+        isDragging = true;
+        // 记录鼠标在窗口内的偏移
+        offsetX = e.screenX;
+        offsetY = e.screenY;
+        // 获取当前窗口位置
+        sendMessage('window:drag-start');
+    });
 
-        // 窗口控制按钮事件
-        btnMinimize.addEventListener('click', (e) => {
-            e.stopPropagation();
-            sendMessage('window:minimize');
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) {
+            return;
+        }
+        // 发送绝对屏幕坐标，让后端计算
+        sendMessage('window:drag-move', {
+            sx: e.screenX,
+            sy: e.screenY
         });
+    });
 
-        btnClose.addEventListener('click', (e) => {
-            e.stopPropagation();
-            sendMessage('window:close');
-        });
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
 
-        // 鼠标按下事件 - 立即触发拖拽
-        dragArea.addEventListener('mousedown', (e) => {
-            // 只响应左键
-            if (e.button !== 0) {
-                return;
-            }
-            // 立即发送拖拽消息，让 Win32 API 在鼠标按下的上下文中处理
-            sendMessage('window:drag');
-        });
+</script>
 
-    </script>
 </body>
 </html>

@@ -9,7 +9,6 @@ using FantnelPro.Utils.Update;
 namespace FantnelPro.Utils;
 
 public static class Tools {
-    
     private static bool _isDebugMode;
 
     [Conditional("DEBUG")]
@@ -23,7 +22,7 @@ public static class Tools {
         SetDebugMode();
         return !_isDebugMode;
     }
-    
+
     /**
      * 同步计算文件的SHA256哈希值
      * @param filePath 文件路径
@@ -140,7 +139,7 @@ public static class Tools {
         // 遍历检查目标端口是否存在
         return tcpEndPoints.Any(endPoint => endPoint.Port == port);
     }
-    
+
     // 获取异常信息 【简化版】
     public static string GetMessage(Exception exception)
     {
@@ -159,7 +158,7 @@ public static class Tools {
                 break;
             }
         }
+
         return exception.Message;
     }
-    
 }

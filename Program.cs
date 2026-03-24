@@ -67,7 +67,7 @@ public class Program {
                     FileName = "dotnet",
                     Arguments = arguments,
                     UseShellExecute = true,
-                    WindowStyle = Tools.IsReleaseVersion() ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
+                    WindowStyle = Tools.IsReleaseVersion() ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal
                 };
                 Console.WriteLine("运行中: {0} {1}", startInfo.FileName, startInfo.Arguments);
                 _process = Process.Start(startInfo);
@@ -82,7 +82,7 @@ public class Program {
         SetDescription("正在连接中...");
         var isError = true;
         var url = "http://localhost:" + port;
-        
+
         for (var i = 0; i < 8; i++) {
             try {
                 Console.WriteLine("正在连接测试...");
@@ -97,6 +97,7 @@ public class Program {
             } catch (Exception e) {
                 Console.WriteLine("连接测试失败: {0}", e.Message);
             }
+
             Thread.Sleep(1000);
         }
 
@@ -108,12 +109,12 @@ public class Program {
 
         await ConnectHome(port);
     }
-    
+
     private static async Task ConnectHome(int port)
     {
         var isError = true;
         var url = "http://localhost:" + port;
-        
+
         for (var i = 0; i < 8; i++) {
             try {
                 Console.WriteLine("正在连接测试Home...");
@@ -128,16 +129,16 @@ public class Program {
             } catch (Exception e) {
                 Console.WriteLine("连接测试失败Home: {0}", e.Message);
             }
+
             Thread.Sleep(1000);
         }
 
         // 失败了
         if (isError) {
             SetDescription("连接失败！");
-            return;
         }
 
-        Window?.Load(url);
+        // Window?.Load(url);
         // Window?.Load("http://localhost:5173/");
     }
 

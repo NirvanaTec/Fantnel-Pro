@@ -3,7 +3,9 @@
 namespace FantnelPro.Utils;
 
 public class PathUtil {
-    public static readonly string UpdaterPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "updater");
+    // Directory.GetCurrentDirectory()
+    // AppDomain.CurrentDomain.BaseDirectory
+    public static readonly string UpdaterPath = Path.Combine(Directory.GetCurrentDirectory(), "updater");
 
     // 脚本后缀
     private static readonly string ScriptSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".bat" :

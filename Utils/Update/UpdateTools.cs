@@ -3,7 +3,6 @@
 namespace FantnelPro.Utils.Update;
 
 public static class UpdateTools {
-    
     // 检查更新
     public static async Task CheckUpdate(string[] args)
     {
