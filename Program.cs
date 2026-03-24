@@ -62,47 +62,86 @@ public class Program {
             if (_process == null || _process.HasExited) {
                 _maxRestarts--;
                 var port = Tools.GetUnusedPort(23521);
-                var arguments = Path.Combine(Directory.GetCurrentDirectory(), "fantnel", "Fantnel.dll") + $" --fantnel_port {port}";
+                var arguments = Path.Combine(Directory.GetCurrentDirectory(), "fantnel", "Fantnel.dll") + $" --fantnel_port {port} --MainPid {Environment.ProcessId}";
                 var startInfo = new ProcessStartInfo {
                     FileName = "dotnet",
                     Arguments = arguments,
                     UseShellExecute = true,
-                    WindowStyle = ProcessWindowStyle.Hidden
+                    WindowStyle = Tools.IsReleaseVersion() ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
                 };
                 Console.WriteLine("运行中: {0} {1}", startInfo.FileName, startInfo.Arguments);
                 _process = Process.Start(startInfo);
-                Thread.Sleep(5000);
-                Connect(port);
+                Thread.Sleep(5300);
+                Connect(port).Wait();
             }
         }
     }
 
-    private static void Connect(int port)
+    private static async Task Connect(int port)
     {
         SetDescription("正在连接中...");
+        var isError = true;
         var url = "http://localhost:" + port;
+        
         for (var i = 0; i < 5; i++) {
             try {
                 Console.WriteLine("正在连接测试...");
                 var x19 = new X19Extensions(url);
-                var version = x19.Api<JsonObject>("/api/version").Result;
+                var version = await x19.Api<JsonObject>("/api/version");
                 var code = version?["code"];
                 var codeInt = code?.GetValue<int?>();
                 if (codeInt == 1) {
+                    isError = false;
                     break;
                 }
             } catch (Exception e) {
                 Console.WriteLine("连接测试失败: {0}", e.Message);
             }
-
             Thread.Sleep(1000);
+        }
+
+        // 失败了
+        if (isError) {
+            SetDescription("连接失败！");
+            return;
+        }
+
+        await ConnectHome(port);
+    }
+    
+    private static async Task ConnectHome(int port)
+    {
+        var isError = true;
+        var url = "http://localhost:" + port;
+        
+        for (var i = 0; i < 5; i++) {
+            try {
+                Console.WriteLine("正在连接测试Home...");
+                var x19 = new X19Extensions(url);
+                var home = await x19.Api<JsonObject>("/api/home");
+                var code = home?["gameVersion"];
+                var gameVersion = code?.GetValue<string?>();
+                if (gameVersion is { Length: > 5 }) {
+                    isError = false;
+                    break;
+                }
+            } catch (Exception e) {
+                Console.WriteLine("连接测试失败: {0}", e.Message);
+            }
+            Thread.Sleep(1000);
+        }
+
+        // 失败了
+        if (isError) {
+            SetDescription("连接失败！");
+            return;
         }
 
         Window?.Load(url);
         // Window?.Load("http://localhost:5173/");
     }
 
-    public static void SetDescription(string description)
+    public static void SetDescription(params string[] description)
     {
         try {
             var response = Code.ToJson1(ErrorCode.SetUpdateTitle, description);

@@ -219,21 +219,22 @@
         sendMessage('window:init');
 
         // 窗口控制按钮事件
-        btnMinimize.addEventListener('click', function(e) {
+        btnMinimize.addEventListener('click', (e) => {
             e.stopPropagation();
             sendMessage('window:minimize');
         });
 
-        btnClose.addEventListener('click', function(e) {
+        btnClose.addEventListener('click', (e) => {
             e.stopPropagation();
             sendMessage('window:close');
         });
 
         // 鼠标按下事件 - 立即触发拖拽
-        dragArea.addEventListener('mousedown', function(e) {
+        dragArea.addEventListener('mousedown', (e) => {
             // 只响应左键
-            if (e.button !== 0) return;
-            
+            if (e.button !== 0) {
+                return;
+            }
             // 立即发送拖拽消息，让 Win32 API 在鼠标按下的上下文中处理
             sendMessage('window:drag');
         });

@@ -1,0 +1,10 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Fantnel Linux | Arm64" type="DotNetFolderPublish" factoryName="Publish to folder">
+    <riderPublish include_all_content_for_self_extract="true" include_native_libs_for_self_extract="true" produce_single_file="true" self_contained="true" target_folder="$PROJECT_DIR$/bin/net9.0/publish/pro.linux.arm64" target_framework="net9.0" uuid_high="-4592477806707919774" uuid_low="-716566038263311442">
+      <runtimes>
+        <item value="linux-arm64" />
+      </runtimes>
+    </riderPublish>
+    <method v="2" />
+  </configuration>
+</component>

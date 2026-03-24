@@ -9,6 +9,21 @@ using FantnelPro.Utils.Update;
 namespace FantnelPro.Utils;
 
 public static class Tools {
+    
+    private static bool _isDebugMode;
+
+    [Conditional("DEBUG")]
+    private static void SetDebugMode()
+    {
+        _isDebugMode = true;
+    }
+
+    public static bool IsReleaseVersion()
+    {
+        SetDebugMode();
+        return !_isDebugMode;
+    }
+    
     /**
      * 同步计算文件的SHA256哈希值
      * @param filePath 文件路径
