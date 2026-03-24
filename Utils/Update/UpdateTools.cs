@@ -3,8 +3,6 @@
 namespace FantnelPro.Utils.Update;
 
 public static class UpdateTools {
-
-    private static readonly string Mode = Tools.DetectOperatingSystemMode() + "." + Tools.DetectArchitectureMode();
     
     // 检查更新
     public static async Task CheckUpdate(string[] args)
@@ -65,7 +63,12 @@ public static class UpdateTools {
 
     public static async Task CheckUpdate(Action action)
     {
-        await CheckUpdate(Mode, "Fantnel", false, true, "fantnel");
+        var system = Tools.DetectOperatingSystemMode();
+        var arch = Tools.DetectArchitectureMode();
+        var mode = system + "." + arch;
+        await CheckUpdate(mode, "Fantnel", false, true, "fantnel");
+        await CheckUpdate("static", "Fantnel", false, true, "fantnel");
+        await CheckUpdate("static." + system, "Fantnel", false, true, "fantnel");
         action.Invoke();
     }
 }

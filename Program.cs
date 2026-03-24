@@ -62,7 +62,7 @@ public class Program {
             if (_process == null || _process.HasExited) {
                 _maxRestarts--;
                 var port = Tools.GetUnusedPort(23521);
-                var arguments = Path.Combine(Directory.GetCurrentDirectory(), "fantnel", "Fantnel.dll") + $" --fantnel_port {port} --MainPid {Environment.ProcessId}";
+                var arguments = Path.Combine(Directory.GetCurrentDirectory(), "fantnel", "Fantnel.dll") + $" --fantnel_port {port} --MainPid {Environment.ProcessId} --default_skin_id nirvana.dark.slate.blue";
                 var startInfo = new ProcessStartInfo {
                     FileName = "dotnet",
                     Arguments = arguments,
@@ -83,7 +83,7 @@ public class Program {
         var isError = true;
         var url = "http://localhost:" + port;
         
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 8; i++) {
             try {
                 Console.WriteLine("正在连接测试...");
                 var x19 = new X19Extensions(url);
@@ -114,7 +114,7 @@ public class Program {
         var isError = true;
         var url = "http://localhost:" + port;
         
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 8; i++) {
             try {
                 Console.WriteLine("正在连接测试Home...");
                 var x19 = new X19Extensions(url);
@@ -126,7 +126,7 @@ public class Program {
                     break;
                 }
             } catch (Exception e) {
-                Console.WriteLine("连接测试失败: {0}", e.Message);
+                Console.WriteLine("连接测试失败Home: {0}", e.Message);
             }
             Thread.Sleep(1000);
         }
