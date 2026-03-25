@@ -70,6 +70,10 @@ public static class UpdateTools {
         await CheckUpdate(SystemArch, "Fantnel", false, true, "fantnel");
         await CheckUpdate("static", "Fantnel", false, true, "fantnel");
         await CheckUpdate("static." + Tools.DetectOperatingSystemMode(), "Fantnel", false, true, "fantnel");
+        var resourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "fantnel", "resources", "static", "index.html");
+        if (!File.Exists(resourcesPath)) {
+            await CheckUpdate("ui.nirvana.dark.slate.blue", "Fantnel UI", false, true, "fantnel");
+        }
         action.Invoke();
     }
     
