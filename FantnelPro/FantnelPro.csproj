@@ -5,11 +5,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Copyright>涅槃科技 © 版权所有</Copyright>
+        <TargetFramework>net10.0</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <RootNamespace>FantnelPro</RootNamespace>
-        <TargetFramework>net9.0</TargetFramework>
+<!--        <RootNamespace>FantnelPro</RootNamespace>-->
+<!--        <TargetFramework>net9.0</TargetFramework>-->
         <ApplicationIcon>wwwroot\favicon.ico</ApplicationIcon>
-        <LangVersion>13</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -23,7 +23,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Photino.NET" Version="4.0.16"/>
+        <PackageReference Include="Photino.NET" Version="4.0.16" />
         <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.5" />
     </ItemGroup>
 
