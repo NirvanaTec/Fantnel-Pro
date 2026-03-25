@@ -24,6 +24,7 @@
 
     <ItemGroup>
         <PackageReference Include="Photino.NET" Version="4.0.16"/>
+        <PackageReference Include="System.Text.Encoding.CodePages" Version="10.0.5" />
     </ItemGroup>
 
     <ItemGroup>
