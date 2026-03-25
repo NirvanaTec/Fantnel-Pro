@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using FantnelPro.Entities;
 using FantnelPro.Handler;
 using FantnelPro.Manager;
 using FantnelPro.Utils;
@@ -18,6 +19,8 @@ public class Program {
 
     public static PhotinoWindow? Window;
     private static string[] _args = [];
+
+    public static EntityInfo? Fantnel;
 
     [STAThread]
     public static void Main(string[] args)
@@ -53,9 +56,28 @@ public class Program {
 
     public static string? Init()
     {
+        FantnelInit().Wait();
         UpdateTools.CheckUpdate(_args).Wait();
         UpdateTools.CheckUpdate(ConnectTest).Wait();
         return null;
+    }
+    
+    private static async Task FantnelInit()
+    {
+        for (var i = 0; i < 3; i++) {
+            try {
+                var entity = await X19Extensions.Nirvana.Api<EntityInfo>("/api/fantnel/pro.fantnel");
+                if (entity != null) {
+                    Fantnel = entity;
+                    return;
+                }
+            } catch (Exception e) {
+               Console.WriteLine("连接服务器失败! 错误信息: {0}", e.Message);
+            }
+        }
+        Console.WriteLine("连接服务器失败!");
+        Thread.Sleep(6000);
+        Environment.Exit(1);
     }
 
     private static void ConnectTest()

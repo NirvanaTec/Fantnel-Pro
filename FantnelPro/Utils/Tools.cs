@@ -19,8 +19,13 @@ public static class Tools {
 
     public static bool IsReleaseVersion()
     {
+        return !IsDebugVersion();
+    }
+    
+    public static bool IsDebugVersion()
+    {
         SetDebugMode();
-        return !_isDebugMode;
+        return _isDebugMode;
     }
 
     /**

@@ -14,7 +14,7 @@ public static class ThreadUpdateTools {
      * url: http://npyyds.to/Fantnel1.dll,
      * sha256: 73f95f9e0ceb205fc1c4dc50c0769729d7087868c2aef1d504cb38c771ec
      */
-    public static async Task CheckUpdate(JsonArray jsonArray, string name, bool safeMode = false, string path = "")
+    public static async Task CheckUpdate(JsonArray jsonArray, string name, bool safeMode = false, string downPath = "")
     {
         var index = 0;
 
@@ -36,8 +36,8 @@ public static class ThreadUpdateTools {
 
             var resourcesPath = Directory.GetCurrentDirectory();
 
-            if (!string.IsNullOrEmpty(path)) {
-                resourcesPath = Path.Combine(resourcesPath, path);
+            if (!string.IsNullOrEmpty(downPath)) {
+                resourcesPath = Path.Combine(resourcesPath, downPath);
             }
 
             resourcesPath = Path.Combine(resourcesPath, pathValue);
@@ -59,25 +59,69 @@ public static class ThreadUpdateTools {
             Thread.Sleep(68);
             await DownloadWithRetryAsync(url, resourcesPath1, name, index++, jsonArray.Count);
         }
-
-        if (safeMode) {
-            Console.WriteLine("正在更新核心资源，这会自动重启[1次]，请稍后...");
-            var scriptPath = PathUtil.ScriptPath;
-            await Tools.SaveShellScript(scriptPath, GenerateUpdateScript());
-            Process.Start(new ProcessStartInfo {
-                FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd.exe" : "/bin/bash",
-                Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "/C \"" + scriptPath + "\"" : scriptPath,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            });
-            Environment.Exit(0);
+        if (safeMode && index > 0) {
+            await SafeRestart();
         }
     }
 
-    private static string GenerateUpdateScript()
+    public static async Task CheckUpdateSingle(JsonArray jsonArray, string name, string filePath, bool safeMode = false)
     {
-        var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Tools.GetProcessLocation() : Tools.GetProcessArguments();
-        var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), exeName, Environment.GetCommandLineArgs()[0]);
+        var index = 0;
+        var resourcesPath1 = "";
+        foreach (var item in jsonArray) {
+            // 下载进度
+
+            if (item == null) {
+                continue;
+            }
+
+            var url = item["url"]?.GetValue<string>();
+            if (string.IsNullOrEmpty(url)) {
+                continue;
+            }
+
+            // 修复路径
+            resourcesPath1 = safeMode ? Path.Combine(PathUtil.UpdaterPath, name) : filePath;
+
+            // 硬盘访问速限制 1 秒 / 32次 ≈ 0.015
+            Thread.Sleep(15);
+
+            // 检查是否需要更新
+            if (!NeedsUpdate(item, filePath)) {
+                continue;
+            }
+
+            // 请求速限制 1 秒 / 12次 ≈ 0.083
+            // 83 - 15 = 68ms
+            Thread.Sleep(68);
+            await DownloadWithRetryAsync(url, resourcesPath1, name, index++, jsonArray.Count);
+        }
+        if (safeMode && index > 0) {
+            await SafeRestart(resourcesPath1);
+        }
+    }
+
+    private static async Task SafeRestart(string exeName = "")
+    {
+        Console.WriteLine("正在更新核心资源，这会自动重启[1次]，请稍后...");
+        var scriptPath = PathUtil.ScriptPath;
+        await Tools.SaveShellScript(scriptPath, GenerateUpdateScript(exeName));
+        Process.Start(new ProcessStartInfo {
+            FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd.exe" : "/bin/bash",
+            Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "/C \"" + scriptPath + "\"" : scriptPath,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        });
+        Environment.Exit(0);
+    }
+    
+    private static string GenerateUpdateScript(string exeName)
+    {
+        var exeName1 = exeName;
+        if (string.IsNullOrEmpty(exeName1)) {
+            exeName1 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Tools.GetProcessLocation() : Tools.GetProcessArguments();
+        }
+        var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), exeName1, Environment.GetCommandLineArgs()[0]);
         Console.WriteLine("更新脚本: {0}", updateScript);
         return updateScript;
     }

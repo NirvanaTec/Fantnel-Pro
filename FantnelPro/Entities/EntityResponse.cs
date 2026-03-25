@@ -23,3 +23,8 @@ public class EntityRequestAction {
     [JsonPropertyName("data")]
     public JsonElement? Data { get; set; }
 }
+
+public class EntityInfo {
+    [JsonPropertyName("versions")]
+    public string[]? Versions { get; init; }
+}

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Nodes;
+﻿using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
 
 namespace FantnelPro.Utils.Update;
 
@@ -29,7 +30,7 @@ public static class UpdateTools {
             // }
             // 正常检查
             if (Tools.IsReleaseVersion()) {
-                await CheckUpdate("pro." + SystemArch, "Fantnel-Pro", true);
+                await CheckUpdateSingle("pro." + SystemArch, "FantPro_" + Program.Fantnel?.Versions?.Last() + (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : ""));
             }
         }
     }
@@ -39,14 +40,12 @@ public static class UpdateTools {
      * @param name 名称
      * @param safe 是否安全模式
      */
-    private static async Task<int> CheckUpdate(string mode, string name = "Resource", bool safe = false,
-        bool failureLog = true, string pathValue = "")
+    private static async Task<int> CheckUpdate(string mode, string name = "Resource", bool safe = false, string pathValue = "")
     {
         var jsonObj = await X19Extensions.Nirvana.Api<JsonObject>(
             $"/api/fantnel/update/get?mode={mode}");
 
         if (jsonObj == null) {
-            if (!failureLog) return -1;
             Console.WriteLine("{0}: {1}", name, mode);
             Console.WriteLine("检查更新失败, 建议更新至最新版本!");
             return -1;
@@ -54,7 +53,6 @@ public static class UpdateTools {
 
         var data = jsonObj["data"];
         if (data == null) {
-            if (!failureLog) return -1;
             Console.WriteLine("{0}: {1}", name, mode);
             Console.WriteLine("检查更新失败, 建议更新至最新版本!");
             return -1;
@@ -64,12 +62,39 @@ public static class UpdateTools {
         await ThreadUpdateTools.CheckUpdate(array, name, safe, pathValue);
         return array.Count;
     }
+    
+    private static async Task<int> CheckUpdateSingle(string mode, string name = "Resource", bool safe = true)
+    {
+        var jsonObj = await X19Extensions.Nirvana.Api<JsonObject>(
+            $"/api/fantnel/update/get?mode={mode}");
+
+        if (jsonObj == null) {
+            Console.WriteLine("{0}: {1}", name, mode);
+            Console.WriteLine("检查更新失败, 建议更新至最新版本!");
+            return -1;
+        }
+
+        var data = jsonObj["data"];
+        if (data == null) {
+            Console.WriteLine("{0}: {1}", name, mode);
+            Console.WriteLine("检查更新失败, 建议更新至最新版本!");
+            return -1;
+        }
+
+        var array = data.AsArray();
+        await ThreadUpdateTools.CheckUpdateSingle(array, name, Environment.GetCommandLineArgs()[0], safe);
+        return array.Count;
+    }
 
     public static async Task CheckUpdate(Action action)
     {
-        await CheckUpdate(SystemArch, "Fantnel", false, true, "fantnel");
-        await CheckUpdate("static", "Fantnel", false, true, "fantnel");
-        await CheckUpdate("static." + Tools.DetectOperatingSystemMode(), "Fantnel", false, true, "fantnel");
+        await CheckUpdate(SystemArch, "Fantnel", false, "fantnel");
+        await CheckUpdate("static", "Fantnel", false, "fantnel");
+        await CheckUpdate("static." + Tools.DetectOperatingSystemMode(), "Fantnel", false, "fantnel");
+        var resourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "fantnel", "resources", "static", "index.html");
+        if (!File.Exists(resourcesPath)) {
+            await CheckUpdate("ui.nirvana.dark.slate.blue", "Fantnel UI", false, "fantnel");
+        }
         action.Invoke();
     }
     
