@@ -28,7 +28,9 @@ public static class UpdateTools {
             //     break;
             // }
             // 正常检查
-            await CheckUpdate("pro." + SystemArch, "Fantnel-Pro", true);
+            if (Tools.IsReleaseVersion()) {
+                await CheckUpdate("pro." + SystemArch, "Fantnel-Pro", true);
+            }
         }
     }
 
