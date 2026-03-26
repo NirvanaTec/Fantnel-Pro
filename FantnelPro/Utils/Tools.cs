@@ -21,8 +21,8 @@ public static class Tools {
     {
         return !IsDebugVersion();
     }
-    
-    public static bool IsDebugVersion()
+
+    private static bool IsDebugVersion()
     {
         SetDebugMode();
         return _isDebugMode;
@@ -58,37 +58,6 @@ public static class Tools {
             Console.WriteLine("设置权限: {0}", filePath);
             FileUtil.SetUnixFilePermissions(filePath);
         }
-    }
-
-    /**
-    * @return 当前进程的路径
-    */
-    public static string GetProcessLocation()
-    {
-        var currentProcess = Process.GetCurrentProcess();
-        var mainModule = currentProcess.MainModule;
-        if (mainModule != null) {
-            var fileName1 = mainModule.FileName;
-            if (!string.IsNullOrEmpty(fileName1)) return fileName1;
-        }
-
-        var fileName2 = Environment.ProcessPath;
-        return string.IsNullOrEmpty(fileName2) ? throw new Exception("无法确定自身运行路径，无法重启当前进程。") : fileName2;
-    }
-
-    /**
-     * 前/尾 不包含空格
-     * @return 当前进程的附加参数
-     */
-    public static string GetProcessArguments(List<string>? arguments = null)
-    {
-        var arg = Environment.GetCommandLineArgs().Aggregate("", (current, lineArg) => current + lineArg + " ");
-        if (arguments != null) {
-            arg = arguments.Aggregate(arg, (current, argument) => current + argument + " ");
-        }
-        // 移除最后一个空格
-        // "a " > "a"
-        return arg.Length >= 2 ? arg[..^1] : arg;
     }
 
     /**

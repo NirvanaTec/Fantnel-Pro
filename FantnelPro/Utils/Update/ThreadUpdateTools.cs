@@ -14,7 +14,7 @@ public static class ThreadUpdateTools {
      * url: http://npyyds.to/Fantnel1.dll,
      * sha256: 73f95f9e0ceb205fc1c4dc50c0769729d7087868c2aef1d504cb38c771ec
      */
-    public static async Task CheckUpdate(JsonArray jsonArray, string name, bool safeMode = false, string downPath = "")
+    public static async Task CheckUpdate(JsonArray jsonArray, string name, string downPath = "")
     {
         var index = 0;
 
@@ -41,10 +41,7 @@ public static class ThreadUpdateTools {
             }
 
             resourcesPath = Path.Combine(resourcesPath, pathValue);
-            var resourcesPath1 = resourcesPath;
-            if (safeMode) {
-                resourcesPath1 = Path.Combine(PathUtil.UpdaterPath, pathValue);
-            }
+
 
             // 硬盘访问速限制 1 秒 / 32次 ≈ 0.015
             Thread.Sleep(15);
@@ -57,10 +54,7 @@ public static class ThreadUpdateTools {
             // 请求速限制 1 秒 / 12次 ≈ 0.083
             // 83 - 15 = 68ms
             Thread.Sleep(68);
-            await DownloadWithRetryAsync(url, resourcesPath1, name, index++, jsonArray.Count);
-        }
-        if (safeMode && index > 0) {
-            await SafeRestart();
+            await DownloadWithRetryAsync(url, resourcesPath, name, index++, jsonArray.Count);
         }
     }
 
@@ -101,7 +95,7 @@ public static class ThreadUpdateTools {
         }
     }
 
-    private static async Task SafeRestart(string exeName = "")
+    private static async Task SafeRestart(string exeName)
     {
         Console.WriteLine("正在更新核心资源，这会自动重启[1次]，请稍后...");
         var scriptPath = PathUtil.ScriptPath;
@@ -117,22 +111,26 @@ public static class ThreadUpdateTools {
     
     private static string GenerateUpdateScript(string exeName)
     {
-        var exeName1 = exeName;
-        if (string.IsNullOrEmpty(exeName1)) {
-            exeName1 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Tools.GetProcessLocation() : Tools.GetProcessArguments();
-        }
-        var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), exeName1, Environment.GetCommandLineArgs()[0]);
-        updateScript = Environment.GetCommandLineArgs().Aggregate(updateScript, (current, command) => current + command + " ");
+        var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), Environment.GetCommandLineArgs()[0]);
+        updateScript += GenerateStartScript(exeName);
         Console.WriteLine("更新脚本: {0}", updateScript);
         return updateScript;
     }
 
-    private static string GenerateUpdateScript(string tempDir, string targetDir, string exeName, string fileToDelete)
+    private static string GenerateUpdateScript(string tempDir, string targetDir, string fileToDelete)
     {
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
             ? $"timeout /t 1 /nobreak\r\nxcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\r\ndel \"{fileToDelete}\"\r\n" 
-            : $"sleep 1\ncp -r \"{tempDir}/.\" \"{targetDir}\"\nrm -f \"{fileToDelete}\"\nchmod +x \"{exeName}\"\n";
+            : $"sleep 1\ncp -r \"{tempDir}/.\" \"{targetDir}\"\nrm -f \"{fileToDelete}\"\n";
     }
+    
+    private static string GenerateStartScript(string exeName)
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+            ? $"start \"\" \"{exeName}\""
+            : $"chmod +x \"{exeName}\"\n{exeName}";
+    }
+    
     
     /// <summary>
     ///     以异步方式下载文件，并在失败时自动重试。

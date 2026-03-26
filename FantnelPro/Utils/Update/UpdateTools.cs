@@ -40,7 +40,7 @@ public static class UpdateTools {
      * @param name 名称
      * @param safe 是否安全模式
      */
-    private static async Task<int> CheckUpdate(string mode, string name = "Resource", bool safe = false, string pathValue = "")
+    private static async Task<int> CheckUpdate(string mode, string name = "Resource", string pathValue = "")
     {
         var jsonObj = await X19Extensions.Nirvana.Api<JsonObject>(
             $"/api/fantnel/update/get?mode={mode}");
@@ -59,7 +59,7 @@ public static class UpdateTools {
         }
 
         var array = data.AsArray();
-        await ThreadUpdateTools.CheckUpdate(array, name, safe, pathValue);
+        await ThreadUpdateTools.CheckUpdate(array, name, pathValue);
         return array.Count;
     }
     
@@ -88,13 +88,13 @@ public static class UpdateTools {
 
     public static async Task CheckUpdate(Action action)
     {
-        await CheckUpdate(SystemArch, "Fantnel", false, "fantnel");
-        await CheckUpdate("static", "Fantnel", false, "fantnel");
-        await CheckUpdate("static." + Tools.DetectOperatingSystemMode(), "Fantnel", false, "fantnel");
+        await CheckUpdate(SystemArch, "Fantnel", "fantnel");
+        await CheckUpdate("static", "Fantnel", "fantnel");
+        await CheckUpdate("static." + Tools.DetectOperatingSystemMode(), "Fantnel", "fantnel");
         
         // 检查主题
         var theme = ConfigUtil.GetConfig("themeValue","ui.nirvana.dark.slate.blue");
-        await CheckUpdate(theme, "Fantnel UI", false, "fantnel");
+        await CheckUpdate(theme, "Fantnel UI", "fantnel");
         
         action.Invoke();
     }
