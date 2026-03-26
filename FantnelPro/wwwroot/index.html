@@ -423,7 +423,7 @@
         }
     }
 
-    function receiveMessage(message) {
+    function handleMessage(message) {
         try {
             const response = JSON.parse(message);
             if (response.code === 4) {
@@ -435,7 +435,7 @@
     }
 
     if (window.external && window.external.receiveMessage) {
-        window.external.receiveMessage(receiveMessage);
+        window.external.receiveMessage(handleMessage);
     }
 
     sendMessage('window:init');

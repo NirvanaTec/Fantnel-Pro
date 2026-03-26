@@ -91,10 +91,11 @@ public static class UpdateTools {
         await CheckUpdate(SystemArch, "Fantnel", false, "fantnel");
         await CheckUpdate("static", "Fantnel", false, "fantnel");
         await CheckUpdate("static." + Tools.DetectOperatingSystemMode(), "Fantnel", false, "fantnel");
-        var resourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "fantnel", "resources", "static", "index.html");
-        if (!File.Exists(resourcesPath)) {
-            await CheckUpdate("ui.nirvana.dark.slate.blue", "Fantnel UI", false, "fantnel");
-        }
+        
+        // 检查主题
+        var theme = ConfigUtil.GetConfig("themeValue","ui.nirvana.dark.slate.blue");
+        await CheckUpdate(theme, "Fantnel UI", false, "fantnel");
+        
         action.Invoke();
     }
     
