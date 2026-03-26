@@ -103,8 +103,6 @@ public static class ThreadUpdateTools {
         Process.Start(new ProcessStartInfo {
             FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd.exe" : "/bin/bash",
             Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "/C \"" + scriptPath + "\"" : scriptPath,
-            UseShellExecute = false,
-            CreateNoWindow = true
         });
         Environment.Exit(0);
     }
