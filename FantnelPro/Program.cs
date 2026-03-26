@@ -192,7 +192,8 @@ public class Program {
 
     private static string GetPathByResourceName(string resourceName)
     {
-        var outputPath = Path.Combine(Directory.GetCurrentDirectory(), "fantnel", "pro");
+        Directory.CreateDirectory(PathUtil.FantPath);
+        var outputPath = Path.Combine(PathUtil.FantPath, "pro");
         Directory.CreateDirectory(outputPath);
         outputPath = Path.Combine(outputPath, resourceName);
         using var resourceStream = GetStream(resourceName);
