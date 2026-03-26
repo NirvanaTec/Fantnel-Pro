@@ -61,7 +61,9 @@ public static class ThreadUpdateTools {
     public static async Task CheckUpdateSingle(JsonArray jsonArray, string name, string filePath, bool safeMode = false)
     {
         var index = 0;
-        var resourcesPath1 = "";
+        var exeName = "";
+        var pathList = new List<string>();
+        
         foreach (var item in jsonArray) {
             // 下载进度
 
@@ -75,7 +77,7 @@ public static class ThreadUpdateTools {
             }
 
             // 修复路径
-            resourcesPath1 = safeMode ? Path.Combine(PathUtil.UpdaterPath, name) : filePath;
+            var resourcesPath1 = safeMode ? Path.Combine(PathUtil.UpdaterPath, name) : filePath;
 
             // 硬盘访问速限制 1 秒 / 32次 ≈ 0.015
             Thread.Sleep(15);
@@ -88,10 +90,20 @@ public static class ThreadUpdateTools {
             // 请求速限制 1 秒 / 12次 ≈ 0.083
             // 83 - 15 = 68ms
             Thread.Sleep(68);
+            exeName = resourcesPath1;
+            
+            pathList.Add(resourcesPath1);
             await DownloadWithRetryAsync(url, resourcesPath1, name, index++, jsonArray.Count);
         }
+        
         if (safeMode && index > 0) {
-            await SafeRestart(resourcesPath1);
+            foreach (var path in Directory.GetFiles(PathUtil.UpdaterPath)) {
+                if (pathList.Contains(path)) {
+                    continue;
+                }
+                File.Delete(path);
+            }
+            await SafeRestart(exeName);
         }
     }
 
