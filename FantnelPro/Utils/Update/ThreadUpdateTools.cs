@@ -122,17 +122,18 @@ public static class ThreadUpdateTools {
             exeName1 = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Tools.GetProcessLocation() : Tools.GetProcessArguments();
         }
         var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), exeName1, Environment.GetCommandLineArgs()[0]);
+        updateScript = Environment.GetCommandLineArgs().Aggregate(updateScript, (current, command) => current + command + " ");
         Console.WriteLine("更新脚本: {0}", updateScript);
         return updateScript;
     }
 
     private static string GenerateUpdateScript(string tempDir, string targetDir, string exeName, string fileToDelete)
     {
-        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? $"timeout /t 1 /nobreak\r\nxcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\r\ndel \"{fileToDelete}\"\r\nstart \"\" \"{exeName}\""
-            : $"sleep 1\ncp -r \"{tempDir}/.\" \"{targetDir}\"\nrm -f \"{fileToDelete}\"\ndotnet \"{exeName}\" & rm -rf \"{tempDir}\"";
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+            ? $"timeout /t 1 /nobreak\r\nxcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\r\ndel \"{fileToDelete}\"\r\n" 
+            : $"sleep 1\ncp -r \"{tempDir}/.\" \"{targetDir}\"\nrm -f \"{fileToDelete}\"\nchmod +x \"{exeName}\"\n";
     }
-
+    
     /// <summary>
     ///     以异步方式下载文件，并在失败时自动重试。
     /// </summary>

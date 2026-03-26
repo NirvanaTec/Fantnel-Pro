@@ -83,7 +83,9 @@ public static class Tools {
     public static string GetProcessArguments(List<string>? arguments = null)
     {
         var arg = Environment.GetCommandLineArgs().Aggregate("", (current, lineArg) => current + lineArg + " ");
-        if (arguments != null) arg = arguments.Aggregate(arg, (current, argument) => current + argument + " ");
+        if (arguments != null) {
+            arg = arguments.Aggregate(arg, (current, argument) => current + argument + " ");
+        }
         // 移除最后一个空格
         // "a " > "a"
         return arg.Length >= 2 ? arg[..^1] : arg;
