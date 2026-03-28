@@ -90,7 +90,7 @@ public static class ThreadUpdateTools {
             // 请求速限制 1 秒 / 12次 ≈ 0.083
             // 83 - 15 = 68ms
             Thread.Sleep(68);
-            exeName = resourcesPath1;
+            exeName = safeMode ? Path.Combine(PathUtil.FantPath, name) : filePath;
             
             pathList.Add(resourcesPath1);
             await DownloadWithRetryAsync(url, resourcesPath1, name, index++, jsonArray.Count);
@@ -130,8 +130,8 @@ public static class ThreadUpdateTools {
     private static string GenerateUpdateScript(string tempDir, string targetDir, string fileToDelete)
     {
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
-            ? $"timeout /t 1 /nobreak\r\nxcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\r\ndel \"{fileToDelete}\"\r\n" 
-            : $"sleep 1\ncp -r \"{tempDir}/.\" \"{targetDir}\"\nrm -f \"{fileToDelete}\"\n";
+            ? $"timeout /t 1 /nobreak\ndel \"{fileToDelete}\"\nxcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\n" 
+            : $"sleep 1\nrm -f \"{fileToDelete}\"\ncp -r \"{tempDir}/.\" \"{targetDir}\"\n";
     }
     
     private static string GenerateStartScript(string exeName)
