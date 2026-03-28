@@ -10,6 +10,13 @@ public static class UpdateTools {
     // 检查更新
     public static async Task CheckUpdate(string[] args)
     {
+        if (!"1.0.0".Equals(Program.GetFant().UpdateVersions)) {
+            Console.WriteLine("当前版本已被禁用，请前往官网重新下载！");
+            Thread.Sleep(6000);
+            Environment.Exit(1);
+            return;
+        }
+        
         var update = 0; // 0:正常检查 1:不检查 2:已被检查
         if (args.Any(arg => arg == "--update_false")) {
             update = 2;
@@ -30,7 +37,7 @@ public static class UpdateTools {
             // }
             // 正常检查
             if (Tools.IsReleaseVersion()) {
-                await CheckUpdateSingle("pro." + SystemArch, "FantPro_" + Program.Fantnel?.Versions?.Last() + (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : ""));
+                await CheckUpdateSingle("pro." + SystemArch, "FantPro_" + Program.Fantnel?.Versions.Last() + (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : ""));
             }
         }
     }

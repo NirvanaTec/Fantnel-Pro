@@ -26,5 +26,11 @@ public class EntityRequestAction {
 
 public class EntityInfo {
     [JsonPropertyName("versions")]
-    public string[]? Versions { get; init; }
+    public required string[] Versions { get; init; }
+    
+    [JsonPropertyName("update_versions")]
+    public required string UpdateVersions { get; init; }
+    
+    
+    
 }

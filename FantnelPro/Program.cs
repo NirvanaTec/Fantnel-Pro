@@ -75,9 +75,16 @@ public class Program {
                Console.WriteLine("连接服务器失败! 错误信息: {0}", e.Message);
             }
         }
-        Console.WriteLine("连接服务器失败!");
-        Thread.Sleep(6000);
-        Environment.Exit(1);
+    }
+
+    public static EntityInfo GetFant()
+    {
+        if (Fantnel == null) {
+            Console.WriteLine("连接服务器失败!");
+            Thread.Sleep(6000);
+            Environment.Exit(1);
+        }
+        return Fantnel;
     }
 
     private static void ConnectTest()
