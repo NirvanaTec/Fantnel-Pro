@@ -111,7 +111,7 @@ public static class ThreadUpdateTools {
     {
         Console.WriteLine("正在更新核心资源，这会自动重启[1次]，请稍后...");
         var scriptPath = PathUtil.ScriptPath;
-        await Tools.SaveShellScript(scriptPath, GenerateUpdateScript(exeName));
+        await Tools.SaveShellScript(scriptPath, GenerateUpdateScript(exeName, scriptPath));
         Process.Start(new ProcessStartInfo {
             FileName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "cmd.exe" : "/bin/bash",
             Arguments = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "/C \"" + scriptPath + "\"" : scriptPath,
@@ -119,19 +119,27 @@ public static class ThreadUpdateTools {
         Environment.Exit(0);
     }
     
-    private static string GenerateUpdateScript(string exeName)
+    private static string GenerateUpdateScript(string exeName, string scriptPath)
     {
         var updateScript = GenerateUpdateScript(PathUtil.UpdaterPath, Directory.GetCurrentDirectory(), Environment.GetCommandLineArgs()[0]);
         updateScript += GenerateStartScript(exeName);
+        updateScript += GenerateDeleteScript(scriptPath);
         Console.WriteLine("更新脚本: {0}", updateScript);
         return updateScript;
+    }
+    
+    private static string GenerateDeleteScript(string fileToDelete)
+    {
+        return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
+            ? $"del \"{fileToDelete}\"\n" 
+            : $"rm -f \"{fileToDelete}\"\n";
     }
 
     private static string GenerateUpdateScript(string tempDir, string targetDir, string fileToDelete)
     {
         return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
-            ? $"timeout /t 1 /nobreak\ndel \"{fileToDelete}\"\nxcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\n" 
-            : $"sleep 1\nrm -f \"{fileToDelete}\"\ncp -r \"{tempDir}/.\" \"{targetDir}\"\n";
+            ? "timeout /t 1 /nobreak\n" + GenerateDeleteScript(fileToDelete) + $"xcopy /e /y /i \"{tempDir}\\*\" \"{targetDir}\"\n" 
+            : "sleep 1\n" + GenerateDeleteScript(fileToDelete) + $"cp -r \"{tempDir}/.\" \"{targetDir}\"\n";
     }
     
     private static string GenerateStartScript(string exeName)
