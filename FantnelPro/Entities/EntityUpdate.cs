@@ -77,6 +77,9 @@ public class EntityUpdate {
         if (jsonArray == null) {
             return -1;
         }
+        if (SafeMode) {
+            Directory.Delete(PathUtil.UpdaterPath, true);
+        }
         var count = 0;
         var progress = 0;
         for (var i = 0; i < jsonArray.Count; i++) {
@@ -122,6 +125,7 @@ public class EntityUpdate {
         };
         var safeSavePath = filePath;
         if (SafeMode) {
+            Directory.Delete(PathUtil.UpdaterPath, true);
             safeSavePath = Path.Combine(PathUtil.UpdaterPath, Path.GetFileName(filePath));
         }
         return await CheckUpdateSingle(entityUpdate, filePath, safeSavePath, downloadProgress);
