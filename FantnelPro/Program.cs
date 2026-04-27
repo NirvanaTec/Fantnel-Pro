@@ -27,11 +27,12 @@ public class Program {
     [STAThread]
     public static void Main(string[] args)
     {
-        UpdateTools.LogNirvana();
         
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         
         Logger.LogoInit();
+        
+        UpdateTools.LogNirvana();
         
         Window = new PhotinoWindow()
             .SetTitle("涅槃科技 | Fantnel - Pro")

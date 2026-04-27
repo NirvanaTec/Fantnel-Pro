@@ -47,9 +47,9 @@ public static class UpdateTools {
         }.CheckUpdate(PathUtil.FantName);
 
         // 检查主题
-        var theme = ConfigUtil.GetConfig("themeValue", "ui.nirvana.dark.slate.blue");
+        var theme = ConfigUtil.GetConfig("themeValue", "nirvana.dark.slate.blue");
         await new EntityUpdate {
-            Mode = theme,
+            Mode = "ui." + theme,
             Name = "Fantnel UI"
         }.CheckUpdate(PathUtil.FantName);
 
