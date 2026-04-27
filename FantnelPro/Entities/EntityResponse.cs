@@ -31,6 +31,4 @@ public class EntityInfo {
     [JsonPropertyName("update_versions")]
     public required string UpdateVersions { get; init; }
     
-    
-    
 }

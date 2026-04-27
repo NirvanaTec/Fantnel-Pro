@@ -41,18 +41,19 @@ public static class UpdateTools {
 
     public static async Task CheckUpdate(Action action)
     {
+        // 检查核心
         await new EntityUpdate {
             Mode = PathUtil.SystemArch,
             Name = "Fantnel"
-        }.CheckUpdate(PathUtil.FantName);
+        }.CheckUpdateSafe(PathUtil.FantName);
 
         // 检查主题
         var theme = ConfigUtil.GetConfig("themeValue", "nirvana.dark.slate.blue");
         await new EntityUpdate {
             Mode = "ui." + theme,
             Name = "Fantnel UI"
-        }.CheckUpdate(PathUtil.FantName);
-
+        }.CheckUpdateSafe(PathUtil.FantName);
+        
         action.Invoke();
     }
 }

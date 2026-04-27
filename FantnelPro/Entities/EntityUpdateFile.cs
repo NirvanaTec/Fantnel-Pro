@@ -12,7 +12,8 @@ public class EntityUpdateFile {
     private readonly long? _fileSize; // 文件大小
     private readonly string? _fileSha256; // 文件SHA256
     private static readonly Lock Lock = new ();
-
+    private static int _downloadCountInSecond; // 线程下载数
+    
     public EntityUpdateFile(JsonNode? item) {
         // 文件下载地址
         var url = item?["url"];
@@ -45,24 +46,47 @@ public class EntityUpdateFile {
         if (string.IsNullOrEmpty(_downloadUrl)) {
             return 2;
         }
-        // 硬盘访问速限制 1 秒 / 66次 ≈ 0.015
+        // 硬盘访问速限制 1 秒 / 60次 ≈ 0.016
         lock (Lock) {
-            Thread.Sleep(15);
+            Thread.Sleep(16);
         }
         // 检查是否需要更新
         if (!NeedsUpdate(filePath)) {
             return 0;
         }
-        // 请求速限制 1 秒 / 12次 ≈ 0.083
+        // 请求速限制 1 秒 / 9次 ≈ 0.111
         lock (Lock) {
-            // 83 - 15 = 68ms
-            Thread.Sleep(68);
+            // 111 - 16 = 95ms
+            Thread.Sleep(95);
         }
+        // 下载频率限制
+        await WaitForDownloadRateLimitAsync();
         // 下载文件
         var success = await DownloadUtil.DownloadAsync(_downloadUrl, safeSavePath, progressValue => {
             downloadProgress?.Invoke(progressValue);
         });
-        return success ? 1 : 4;
+        lock (Lock)
+        {
+            _downloadCountInSecond--;
+        }
+        return success ? 1 : 3;
+    }
+    
+    private static async Task WaitForDownloadRateLimitAsync()
+    {
+        while (true)
+        {
+            lock (Lock)
+            {   
+                // 未达到上限，允许下载
+                if (_downloadCountInSecond < 3) {
+                    _downloadCountInSecond++;
+                    break;
+                }
+            }
+            // 达到上限，等待一小段时间再重试
+            await Task.Delay(100);
+        }
     }
 
     private bool NeedsUpdate(string filePath)

@@ -12,7 +12,8 @@ public class EntityUpdate {
     public string Name = "Resource"; // 显示名称
     public bool SafeMode = false; // 使用 脚本 更新
     public string Command = ""; // 附加 脚本 命令 [更新\n + "Command" + \n启动]
-
+    private static readonly Lock Lock = new ();
+    
     private async Task<JsonArray?> Initialize()
     {
         var jsonObj = await X19Extensions.Nirvana.Api<JsonObject>(
@@ -46,11 +47,28 @@ public class EntityUpdate {
         var success = await CheckUpdateSingle(jsonArray[0], filePath, downloadProgress);
         return await SafeRestartUpdate(success, filePath);
     }
-    
+
+    /**
+    * 检查所有文件更新 [完全保证更新成功]
+    * @param basePath 基础文件路径 [UpdaterBasePath + "basePath" + FilePath]
+    * @return 影响文件数量 [仅包含: 0无需 1成功]
+    */
+    public async Task<int> CheckUpdateSafe(params string[] basePathList)
+    {
+        while (true) {
+            var count = await CheckUpdate(basePathList);
+            if (count == 0) {
+                return 0;
+            }
+            Thread.Sleep(500);
+        }
+    }
+
+
     /**
     * 检查所有文件更新
     * @param basePath 基础文件路径 [UpdaterBasePath + "basePath" + FilePath]
-    * @return 成功文件数量 [仅包含: 0无需 1成功]
+    * @return 影响文件数量 [仅包含: 0无需 1成功]
     */
     public async Task<int> CheckUpdate(params string[] basePathList)
     {
@@ -69,7 +87,7 @@ public class EntityUpdate {
     /**
     * 检查所有文件更新
     * @param basePath 基础文件路径 [UpdaterBasePath + "basePath" + FilePath]
-    * @return 成功文件数量 [仅包含: 0无需 1成功]
+    * @return 影响文件数量 [仅包含: 0无需 1成功]
     */
     private async Task<int> CheckUpdate(Action<double>? downloadProgress = null, params string[] basePathList)
     {
@@ -82,6 +100,7 @@ public class EntityUpdate {
         }
         var count = 0;
         var progress = 0;
+        var threads = new List<Thread>();
         for (var i = 0; i < jsonArray.Count; i++) {
             var jsonNode = jsonArray[i];
             var entityUpdate = new EntityUpdateFile(jsonNode) {
@@ -100,14 +119,25 @@ public class EntityUpdate {
                     return -3;
                 }
             }
-            var success = await CheckUpdateSingle(entityUpdate, filePath, safeSavePath);
-            if (success is 0 or 1) {
-                count++;
-            }
-            progress++;
-            downloadProgress?.Invoke(progress); 
+            var thread = new Thread(() => {
+                // Log.Warning("{0}: Start...", entityUpdate.Index);
+                var success = CheckUpdateSingle(entityUpdate, filePath, safeSavePath).Result;
+                lock (Lock) {
+                    if (success == 1) {
+                        count++;
+                    }
+                    // Log.Warning("{0}: {1}", entityUpdate.Index, success);
+                    progress++;
+                    downloadProgress?.Invoke(100.0 / jsonArray.Count * progress); 
+                }
+            });
+            threads.Add(thread);
+            thread.Start();
         }
-        if (count == jsonArray.Count) {
+        foreach (var thread in threads) {
+            thread.Join();
+        }
+        if (count > 0) {
             await SafeRestartUpdate(1);
         }
         return count;

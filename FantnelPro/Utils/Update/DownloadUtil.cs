@@ -9,13 +9,13 @@ public static class DownloadUtil {
      * 异步下载文件
      */
     public static async Task<bool> DownloadAsync(string url, string destinationPath,
-        Action<double>? downloadProgress = null, int maxConcurrentSegments = 4)
+        Action<double>? downloadProgress = null)
     {
         try {
             var downloadOpt = new DownloadConfiguration {
-                ChunkCount = maxConcurrentSegments, // 设置并发块数
+                // ChunkCount = 1, // 设置并发块数
                 MaxTryAgainOnFailure = 4, // 下载失败后重试次数
-                ParallelDownload = true, // 启用并行下载
+                // ParallelDownload = true, // 启用并行下载 [ChunkCount]
                 EnableAutoResumeDownload = true // 启用自动续传功能
             };
 
