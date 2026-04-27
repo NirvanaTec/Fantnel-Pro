@@ -42,7 +42,7 @@ public partial class WindowHandler {
             _dragAnchorMouse = new Point(entity.Sx, entity.Sy);
             return null;
         }
-        // Console.WriteLine("DragMove: {0}, {1}, {2}", _dragAnchorWindow.X, entity.Sx, _dragAnchorMouse.X);
+        // Log.Warning("DragMove: {0}, {1}, {2}", _dragAnchorWindow.X, entity.Sx, _dragAnchorMouse.X);
         Program.Window.MoveTo(
             _dragAnchorWindow.X + (entity.Sx - _dragAnchorMouse.X),
             _dragAnchorWindow.Y + (entity.Sy - _dragAnchorMouse.Y)

@@ -6,6 +6,7 @@ using FantnelPro.Handler;
 using FantnelPro.Utils;
 using FantnelPro.Utils.CodeTools;
 using Photino.NET;
+using Serilog;
 
 namespace FantnelPro.Manager;
 
@@ -25,11 +26,11 @@ public class MessageManager {
         try {
             var request = JsonSerializer.Deserialize<EntityRequestAction>(rawMessage);
             if (request == null) {
-                Console.WriteLine("收到错误消息: {0}", rawMessage);
+                Log.Error("收到错误消息: {0}", rawMessage);
                 return;
             }
 
-            Console.WriteLine("收到消息: action:{0}", request.Action);
+            Log.Information("收到消息: action:{0}", request.Action);
 
             _ = Task.Run(() => {
                 var response = request.Action switch {
@@ -51,7 +52,7 @@ public class MessageManager {
                 var json = JsonSerializer.Serialize(response);
                 await window.SendWebMessageAsync(json);
             } catch {
-                Console.WriteLine("处理消息时异常2: {0}", ex.Message);
+                Log.Error("处理消息时异常2: {0}", ex.Message);
             }
         }
     }

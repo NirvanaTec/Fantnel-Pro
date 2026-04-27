@@ -33,18 +33,4 @@ public static class ConfigUtil {
         return JsonSerializer.Deserialize<JsonObject>(File.ReadAllText(resourcesPath)) ?? new JsonObject();
     }
 
-    // 保存配置
-    private static void SaveConfig(JsonObject config)
-    {
-        var resourcesPath = Path.Combine(PathUtil.ResourcePath, "config.json");
-        File.WriteAllText(resourcesPath, JsonSerializer.Serialize(config));
-    }
-
-    // 保存配置
-    public static void SaveConfig(string name, string value)
-    {
-        var config = GetConfig();
-        config[name] = value;
-        SaveConfig(config);
-    }
 }

@@ -9,7 +9,9 @@ using FantnelPro.Manager;
 using FantnelPro.Utils;
 using FantnelPro.Utils.CodeTools;
 using FantnelPro.Utils.Update;
+using FantnelPro.Utils.ViewLogger;
 using Photino.NET;
+using Serilog;
 
 namespace FantnelPro;
 
@@ -20,12 +22,14 @@ public class Program {
     public static PhotinoWindow? Window;
     private static string[] _args = [];
 
-    public static EntityInfo? Fantnel;
+    private static EntityInfo? _fantnel;
 
     [STAThread]
     public static void Main(string[] args)
     {
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        
+        Logger.LogoInit();
         
         Window = new PhotinoWindow()
             .SetTitle("涅槃科技 | Fantnel - Pro")
@@ -56,9 +60,9 @@ public class Program {
 
     public static string? Init()
     {
-        FantnelInit().Wait();
-        UpdateTools.CheckUpdate(_args).Wait();
-        UpdateTools.CheckUpdate(ConnectTest).Wait();
+        FantnelInit().Wait(); // 获取基础信息
+        UpdateTools.CheckUpdate(_args).Wait(); // 自更新检测
+        UpdateTools.CheckUpdate(ConnectTest).Wait(); // Fant 更新检测
         return null;
     }
     
@@ -68,23 +72,23 @@ public class Program {
             try {
                 var entity = await X19Extensions.Nirvana.Api<EntityInfo>("/api/fantnel/pro.fantnel");
                 if (entity != null) {
-                    Fantnel = entity;
+                    _fantnel = entity;
                     return;
                 }
             } catch (Exception e) {
-               Console.WriteLine("连接服务器失败! 错误信息: {0}", e.Message);
+               Log.Warning("连接服务器失败! 错误信息: {0}", e.Message);
             }
         }
     }
 
     public static EntityInfo GetFant()
     {
-        if (Fantnel == null) {
-            Console.WriteLine("连接服务器失败!");
+        if (_fantnel == null) {
+            Log.Warning("连接服务器失败!");
             Thread.Sleep(6000);
             Environment.Exit(1);
         }
-        return Fantnel;
+        return _fantnel;
     }
 
     private static void ConnectTest()
@@ -99,9 +103,9 @@ public class Program {
                     FileName = "dotnet",
                     Arguments = arguments,
                 };
-                Console.WriteLine("运行中: {0} {1}", startInfo.FileName, startInfo.Arguments);
+                Log.Warning("运行中: {0} {1}", startInfo.FileName, startInfo.Arguments);
                 _process = Process.Start(startInfo);
-                Thread.Sleep(5300);
+                Thread.Sleep(4000);
                 Connect(port).Wait();
             }
         }
@@ -113,9 +117,9 @@ public class Program {
         var isError = true;
         var url = "http://localhost:" + port;
 
-        for (var i = 0; i < 8; i++) {
+        for (var i = 0; i < 14; i++) {
             try {
-                Console.WriteLine("正在连接测试...");
+                Log.Warning("正在连接测试...");
                 var x19 = new X19Extensions(url);
                 var version = await x19.Api<JsonObject>("/api/version");
                 var code = version?["code"];
@@ -125,7 +129,7 @@ public class Program {
                     break;
                 }
             } catch (Exception e) {
-                Console.WriteLine("连接测试失败: {0}", e.Message);
+                Log.Warning("连接测试失败: {0}", e.Message);
             }
 
             Thread.Sleep(1000);
@@ -147,7 +151,7 @@ public class Program {
 
         for (var i = 0; i < 8; i++) {
             try {
-                Console.WriteLine("正在连接测试Home...");
+                Log.Warning("正在连接测试Home...");
                 var x19 = new X19Extensions(url);
                 var home = await x19.Api<JsonObject>("/api/home");
                 var code = home?["gameVersion"];
@@ -157,7 +161,7 @@ public class Program {
                     break;
                 }
             } catch (Exception e) {
-                Console.WriteLine("连接测试失败Home: {0}", e.Message);
+                Log.Warning("连接测试失败Home: {0}", e.Message);
             }
 
             Thread.Sleep(1000);
@@ -172,14 +176,14 @@ public class Program {
         // Window?.Load("http://localhost:5173/");
     }
 
-    public static void SetDescription(params string[] description)
+    private static void SetDescription(params string[] description)
     {
         try {
             var response = Code.ToJson1(ErrorCode.SetUpdateTitle, description);
             var json = JsonSerializer.Serialize(response);
             Window?.SendWebMessage(json);
         } catch (Exception ex) {
-            Console.WriteLine($"SetDescription 错误：{ex.Message}");
+            Log.Error("SetDescription 错误：{0}", ex.Message);
         }
     }
 

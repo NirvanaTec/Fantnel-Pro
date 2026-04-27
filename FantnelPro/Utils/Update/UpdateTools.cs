@@ -1,109 +1,50 @@
-﻿using System.Runtime.InteropServices;
-using System.Text.Json.Nodes;
+﻿using FantnelPro.Entities;
+using Serilog;
 
 namespace FantnelPro.Utils.Update;
 
 public static class UpdateTools {
-    
-    private static readonly string SystemArch = Tools.DetectOperatingSystemMode() + "." + Tools.DetectArchitectureMode();
-    
-    // 检查更新
+    // 自更新检测
     public static async Task CheckUpdate(string[] args)
     {
         if (!"1.0.0".Equals(Program.GetFant().UpdateVersions)) {
-            Console.WriteLine("当前版本已被禁用，请前往官网重新下载！");
+            Log.Warning("当前版本已被禁用，请前往官网重新下载！");
             Thread.Sleep(6000);
             Environment.Exit(1);
             return;
         }
-        
+
         var update = 0; // 0:正常检查 1:不检查 2:已被检查
         if (args.Any(arg => arg == "--update_false")) {
             update = 2;
         }
 
-        if (update == 0) {
-            // 不检查 - 提醒
-            // case 1:
-            // {
-            //     if (PublicProgram.Release)
-            //     {
-            //         for (var i = 0; i < 4; i++) Log.Warning("当前版本已取消自动更新，建议前往官网重新下载！");
-            //
-            //         Thread.Sleep(3000);
-            //     }
-            //
-            //     break;
-            // }
-            // 正常检查
-            if (Tools.IsReleaseVersion()) {
-                await CheckUpdateSingle("pro." + SystemArch, "FantPro_" + Program.Fantnel?.Versions.Last() + (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : ""));
-            }
+        // 正常检查
+        if (update == 0 && Tools.IsReleaseVersion()) {
+            var filePath = Environment.GetCommandLineArgs()[0];
+            await new EntityUpdate {
+                Mode = "pro." + PathUtil.SystemArch,
+                Name = "Fantnel Pro",
+                SafeMode = true,
+                Command = FileUtil.GenerateStartScript(filePath)
+            }.CheckUpdateSingle(filePath);
         }
-    }
-
-    /**
-     * 检查更新
-     * @param name 名称
-     * @param safe 是否安全模式
-     */
-    private static async Task<int> CheckUpdate(string mode, string name = "Resource", string pathValue = "")
-    {
-        var jsonObj = await X19Extensions.Nirvana.Api<JsonObject>(
-            $"/api/fantnel/update/get?mode={mode}");
-
-        if (jsonObj == null) {
-            Console.WriteLine("{0}: {1}", name, mode);
-            Console.WriteLine("检查更新失败, 建议更新至最新版本!");
-            return -1;
-        }
-
-        var data = jsonObj["data"];
-        if (data == null) {
-            Console.WriteLine("{0}: {1}", name, mode);
-            Console.WriteLine("检查更新失败, 建议更新至最新版本!");
-            return -1;
-        }
-
-        var array = data.AsArray();
-        await ThreadUpdateTools.CheckUpdate(array, name, pathValue);
-        return array.Count;
-    }
-    
-    private static async Task<int> CheckUpdateSingle(string mode, string name = "Resource", bool safe = true)
-    {
-        var jsonObj = await X19Extensions.Nirvana.Api<JsonObject>(
-            $"/api/fantnel/update/get?mode={mode}");
-
-        if (jsonObj == null) {
-            Console.WriteLine("{0}: {1}", name, mode);
-            Console.WriteLine("检查更新失败, 建议更新至最新版本!");
-            return -1;
-        }
-
-        var data = jsonObj["data"];
-        if (data == null) {
-            Console.WriteLine("{0}: {1}", name, mode);
-            Console.WriteLine("检查更新失败, 建议更新至最新版本!");
-            return -1;
-        }
-
-        var array = data.AsArray();
-        await ThreadUpdateTools.CheckUpdateSingle(array, name, Environment.GetCommandLineArgs()[0], safe);
-        return array.Count;
     }
 
     public static async Task CheckUpdate(Action action)
     {
-        await CheckUpdate(SystemArch, "Fantnel", "fantnel");
-        await CheckUpdate("static", "Fantnel", "fantnel");
-        await CheckUpdate("static." + Tools.DetectOperatingSystemMode(), "Fantnel", "fantnel");
-        
+        await new EntityUpdate {
+            Mode = PathUtil.SystemArch,
+            Name = "Fantnel"
+        }.CheckUpdate(PathUtil.FantName);
+
         // 检查主题
-        var theme = ConfigUtil.GetConfig("themeValue","ui.nirvana.dark.slate.blue");
-        await CheckUpdate(theme, "Fantnel UI", "fantnel");
-        
+        var theme = ConfigUtil.GetConfig("themeValue", "ui.nirvana.dark.slate.blue");
+        await new EntityUpdate {
+            Mode = theme,
+            Name = "Fantnel UI"
+        }.CheckUpdate(PathUtil.FantName);
+
         action.Invoke();
     }
-    
 }

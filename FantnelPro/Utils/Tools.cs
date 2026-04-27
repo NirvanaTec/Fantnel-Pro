@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using FantnelPro.Utils.CodeTools;
 using FantnelPro.Utils.Update;
+using Serilog;
 
 namespace FantnelPro.Utils;
 
@@ -35,12 +36,12 @@ public static class Tools {
      */
     public static string ComputeSha256(string filePath)
     {
-        if (string.IsNullOrEmpty(filePath))
+        if (string.IsNullOrEmpty(filePath)) {
             throw new ArgumentException("文件路径不能为空", nameof(filePath));
-
-        if (!File.Exists(filePath))
+        }
+        if (!File.Exists(filePath)) {
             throw new FileNotFoundException($"文件不存在: {filePath}");
-
+        }
         using var sha256 = SHA256.Create();
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
         var hashBytes = sha256.ComputeHash(fileStream);
@@ -55,7 +56,7 @@ public static class Tools {
         } else {
             await File.WriteAllTextAsync(filePath, content);
             // 设置权限
-            Console.WriteLine("设置权限: {0}", filePath);
+            Log.Warning("设置权限: {0}", filePath);
             FileUtil.SetUnixFilePermissions(filePath);
         }
     }
@@ -137,4 +138,7 @@ public static class Tools {
 
         return exception.Message;
     }
+    
+
+    
 }
