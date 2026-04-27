@@ -27,6 +27,8 @@ public class Program {
     [STAThread]
     public static void Main(string[] args)
     {
+        UpdateTools.LogNirvana();
+        
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         
         Logger.LogoInit();

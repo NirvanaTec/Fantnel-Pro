@@ -4,12 +4,20 @@ using Serilog;
 namespace FantnelPro.Utils.Update;
 
 public static class UpdateTools {
+
+    public static void LogNirvana()
+    {
+        for (var i = 0; i < 4; i++) {
+            Log.Warning("https://npyyds.top/");
+        }
+    }
+    
     // 自更新检测
     public static async Task CheckUpdate(string[] args)
     {
         if (!"1.0.1".Equals(Program.GetFant().UpdateVersions)) {
             Log.Warning("当前版本已被禁用，请前往官网重新下载！");
-            Thread.Sleep(6000);
+            LogNirvana();
             Environment.Exit(1);
             return;
         }

@@ -77,7 +77,7 @@ public class EntityUpdate {
         if (jsonArray == null) {
             return -1;
         }
-        if (SafeMode) {
+        if (SafeMode && Directory.Exists(PathUtil.UpdaterPath)) {
             Directory.Delete(PathUtil.UpdaterPath, true);
         }
         var count = 0;
@@ -125,7 +125,9 @@ public class EntityUpdate {
         };
         var safeSavePath = filePath;
         if (SafeMode) {
-            Directory.Delete(PathUtil.UpdaterPath, true);
+            if (Directory.Exists(PathUtil.UpdaterPath)) {
+                Directory.Delete(PathUtil.UpdaterPath, true);
+            }
             safeSavePath = Path.Combine(PathUtil.UpdaterPath, Path.GetFileName(filePath));
         }
         return await CheckUpdateSingle(entityUpdate, filePath, safeSavePath, downloadProgress);
