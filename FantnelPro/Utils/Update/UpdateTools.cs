@@ -1,4 +1,6 @@
-﻿using FantnelPro.Entities;
+﻿using System.Runtime.InteropServices;
+using FantnelPro.Entities;
+using FantnelPro.Entities.EntitiesUpdate;
 using Serilog;
 
 namespace FantnelPro.Utils.Update;
@@ -53,6 +55,26 @@ public static class UpdateTools {
             Mode = "ui." + theme,
             Name = "Fantnel UI"
         }.CheckUpdateSafe(PathUtil.FantName);
+        
+        // 检查静态资源
+        await new EntityUpdate {
+            Mode = "static",
+            Name = "Fantnel Resource"
+        }.CheckUpdateSafe(PathUtil.FantName);
+        
+        // 检查静态系统资源
+        await new EntityUpdate {
+            Mode = "static." + PathUtil.DetectOperating,
+            Name = "Fantnel RSystem"
+        }.CheckUpdateSafe(PathUtil.FantName);
+
+        // 检查静态 Linux 系统资源
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) {
+            await new EntityUpdate {
+                Mode = "static." + PathUtil.SystemArch,
+                Name = "Fantnel LRSystem"
+            }.CheckUpdateSafe(PathUtil.FantName);
+        }
         
         action.Invoke();
     }

@@ -2,7 +2,7 @@
 using FantnelPro.Utils;
 using FantnelPro.Utils.Update;
 
-namespace FantnelPro.Entities;
+namespace FantnelPro.Entities.EntitiesUpdate;
 
 public class EntityUpdateFile {
     

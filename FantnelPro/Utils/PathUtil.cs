@@ -5,7 +5,8 @@ namespace FantnelPro.Utils;
 public static class PathUtil {
     
     // 系统架构 - win.x64
-    public static readonly string SystemArch = Tools.DetectOperatingSystemMode() + "." + Tools.DetectArchitectureMode();
+    public static readonly string DetectOperating = Tools.DetectOperatingSystemMode();
+    public static readonly string SystemArch = DetectOperating + "." + Tools.DetectArchitectureMode();
     
     // Directory.GetCurrentDirectory()
     // AppDomain.CurrentDomain.BaseDirectory

@@ -4,7 +4,7 @@ using FantnelPro.Utils.Progress;
 using FantnelPro.Utils.Update;
 using Serilog;
 
-namespace FantnelPro.Entities;
+namespace FantnelPro.Entities.EntitiesUpdate;
 
 public class EntityUpdate {
     
