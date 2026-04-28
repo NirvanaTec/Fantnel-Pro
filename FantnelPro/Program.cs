@@ -108,7 +108,7 @@ public class Program {
                 };
                 Log.Warning("运行中: {0} {1}", startInfo.FileName, startInfo.Arguments);
                 _process = Process.Start(startInfo);
-                Thread.Sleep(4000);
+                Thread.Sleep(2300);
                 Connect(port).Wait();
             }
         }
