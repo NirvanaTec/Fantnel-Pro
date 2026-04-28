@@ -64,13 +64,12 @@ public class EntityUpdate {
         }
     }
 
-
     /**
     * 检查所有文件更新
     * @param basePath 基础文件路径 [UpdaterBasePath + "basePath" + FilePath]
     * @return 影响文件数量 [仅包含: 0无需 1成功]
     */
-    public async Task<int> CheckUpdate(params string[] basePathList)
+    private async Task<int> CheckUpdate(params string[] basePathList)
     {
         // 下载插件 进度条 初始化
         var progressBar = new SyncProgressBarUtil.ProgressBar();

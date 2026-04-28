@@ -101,7 +101,7 @@ public class Program {
             if (_process == null || _process.HasExited) {
                 _maxRestarts--;
                 var port = Tools.GetUnusedPort(23521);
-                var arguments = Path.Combine(PathUtil.FantPath, "Fantnel.dll") + $" --fantnel_port {port} --MainPid {Environment.ProcessId} --default_skin_id nirvana.dark.slate.blue --update_false";
+                var arguments = "\"" + Path.Combine(PathUtil.FantPath, "Fantnel.dll") + $"\" --fantnel_port {port} --MainPid {Environment.ProcessId} --default_skin_id nirvana.dark.slate.blue --update_false";
                 var startInfo = new ProcessStartInfo {
                     FileName = "dotnet",
                     Arguments = arguments,
