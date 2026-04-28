@@ -18,8 +18,9 @@ public static class UpdateTools {
     public static async Task CheckUpdate(string[] args)
     {
         if (!"1.0.1".Equals(Program.GetFant().UpdateVersions)) {
-            Log.Warning("当前版本已被禁用，请前往官网重新下载！");
+            Log.Error("当前版本已被禁用，请前往官网重新下载！");
             LogNirvana();
+            Thread.Sleep(6000);
             Environment.Exit(1);
             return;
         }
