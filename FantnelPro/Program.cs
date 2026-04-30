@@ -157,9 +157,9 @@ public class Program {
                 Log.Warning("正在连接测试Home...");
                 var x19 = new X19Extensions(url);
                 var home = await x19.Api<JsonObject>("/api/home");
-                var code = home?["gameVersion"];
-                var gameVersion = code?.GetValue<string?>();
-                if (gameVersion is { Length: > 5 }) {
+                var node = home?["crcSalt"];
+                var crcSalt = node?.GetValue<string?>();
+                if (crcSalt is { Length: > 5 }) {
                     isError = false;
                     break;
                 }
@@ -173,10 +173,11 @@ public class Program {
         // 失败了
         if (isError) {
             SetDescription("连接失败！");
+        } else {
+            Window?.Load(url); 
+            // Window?.Load("http://localhost:5173/");
         }
-
-        Window?.Load(url);
-        // Window?.Load("http://localhost:5173/");
+        
     }
 
     private static void SetDescription(params string[] description)
