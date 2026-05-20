@@ -8,45 +8,48 @@ public static class DownloadUtil {
     /**
      * 异步下载文件
      */
-    public static async Task<bool> DownloadAsync(string url, string destinationPath,
-        Action<double>? downloadProgress = null)
+    public static async Task<bool> DownloadAsync(string url, string destinationPath, Action<double>? downloadProgress = null)
     {
         try {
+
+            var tcs = new TaskCompletionSource<bool>();
+
             var downloadOpt = new DownloadConfiguration {
                 // ChunkCount = 1, // 设置并发块数
                 MaxTryAgainOnFailure = 4, // 下载失败后重试次数
                 // ParallelDownload = true, // 启用并行下载 [ChunkCount]
-                EnableAutoResumeDownload = true // 启用自动续传功能
+                EnableAutoResumeDownload = true, // 启用自动续传功能
+                HttpClientTimeout = 300_000 // 5 分钟
             };
 
             await using var downloader = new DownloadService(downloadOpt);
 
-            var lastReportTime = DateTime.MinValue;
-            var throttlePeriod = TimeSpan.FromMilliseconds(200); // 设置更新间隔为100毫秒
+            var lastPercentage = -1.0;
 
             // 注册进度更新事件
             downloader.DownloadProgressChanged += (_, e) => {
-                var percentage = e.ProgressPercentage;
-                var now = DateTime.UtcNow;
-                // 检查距离上次报告是否已超过设定的时间间隔
-                if (now - lastReportTime >= throttlePeriod || percentage >= 100) {
-                    lastReportTime = now;
-                    downloadProgress?.Invoke(percentage);
+                if (Math.Abs(e.ProgressPercentage - lastPercentage) < 0.1) {
+                    return;
+                }
+
+                lastPercentage = e.ProgressPercentage;
+                downloadProgress?.Invoke(e.ProgressPercentage);
+            };
+
+            downloader.DownloadFileCompleted += (_, e) => {
+                if (e.Error != null) {
+                    Log.Error("Download failed for {0}\n{1}", url, e.Error);
+                    tcs.TrySetException(e.Error);
+                } else if (e.Cancelled) {
+                    Log.Information("Download canceled: {0}", url);
+                    tcs.TrySetCanceled();
+                } else {
+                    tcs.TrySetResult(true);
                 }
             };
 
-            // 确保目标目录存在
-            var directory = Path.GetDirectoryName(destinationPath);
-            if (!string.IsNullOrEmpty(directory)) {
-                Directory.CreateDirectory(directory);
-            }
-
-            var package = new DownloadPackage {
-                FileName = destinationPath
-            };
-
-            await downloader.DownloadFileTaskAsync(package, url);
-            return true;
+            await downloader.DownloadFileTaskAsync(url, destinationPath);
+            return await tcs.Task;
         } catch (TaskCanceledException) {
             Log.Information("Download canceled: {0}", url);
             throw;
@@ -86,5 +89,4 @@ public static class DownloadUtil {
             });
         });
     }
-    
 }
