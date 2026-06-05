@@ -5,9 +5,6 @@ using Serilog;
 namespace FantnelPro.Utils.Update;
 
 public static class DownloadUtil {
-    /**
-     * 异步下载文件
-     */
     public static async Task<bool> DownloadAsync(string url, string destinationPath, Action<double>? downloadProgress = null)
     {
         try {
@@ -16,10 +13,10 @@ public static class DownloadUtil {
 
             var downloadOpt = new DownloadConfiguration {
                 // ChunkCount = 1, // 设置并发块数
-                MaxTryAgainOnFailure = 4, // 下载失败后重试次数
+                // MaxTryAgainOnFailure = 4, // 下载失败后重试次数
                 // ParallelDownload = true, // 启用并行下载 [ChunkCount]
-                EnableAutoResumeDownload = true, // 启用自动续传功能
-                HttpClientTimeout = 300_000 // 5 分钟
+                EnableAutoResumeDownload = true // 启用自动续传功能
+                // HttpClientTimeout = 300_000, // 5 分钟超时
             };
 
             await using var downloader = new DownloadService(downloadOpt);
@@ -65,25 +62,11 @@ public static class DownloadUtil {
      * @param path 保存路径
      * @param name 下载名称
      */
-    public static async Task DownloadAsync(string url, string path, string name)
+    public static async Task DownloadAsync(string url, string path, string name, SyncCallback<SyncProgressBarUtil.ProgressReport>? progress = null)
     {
-        // 下载插件 进度条 初始化
-        var progressBar = new SyncProgressBarUtil.ProgressBar();
-        // 下载插件 进度条 回调
-        var uiProgress = new SyncCallback<SyncProgressBarUtil.ProgressReport>(update => progressBar.Update(update.Percent, update.Message));
-        await DownloadAsync(url, path, name, uiProgress);
-    }
-
-    /**
-     * 更新文件
-     * @param url 下载地址
-     * @param path 保存路径
-     * @param name 下载名称
-     */
-    private static async Task DownloadAsync(string url, string path, string name, SyncCallback<SyncProgressBarUtil.ProgressReport> progress)
-    {
+        var uiProgress = SyncCallback.Create(progress);
         await DownloadAsync(url, path, dp => {
-            progress.Report(new SyncProgressBarUtil.ProgressReport {
+            uiProgress.Report(new SyncProgressBarUtil.ProgressReport {
                 Percent = dp,
                 Message = $"Downloading {name}"
             });

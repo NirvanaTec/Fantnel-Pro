@@ -3,11 +3,11 @@ using System.Text;
 namespace FantnelPro.Utils.Progress;
 
 public static class SyncProgressBarUtil {
-    private static readonly Lock Lock = new();
+    private static readonly Lock SyncLock = new();
 
-    private static string GetAnsiColorCode(ConsoleColor color)
+    private static string Fg(ConsoleColor c)
     {
-        return color switch {
+        return c switch {
             ConsoleColor.Black => "\e[30m",
             ConsoleColor.DarkRed => "\e[31m",
             ConsoleColor.DarkGreen => "\e[32m",
@@ -28,40 +28,42 @@ public static class SyncProgressBarUtil {
         };
     }
 
-    public class ProgressBarOptions {
-        public int Width { get; set; } = 45;
+    public class BarConfig {
+        public int Width { get; set; } = 40;
 
         public char FillChar { get; set; } = '■';
 
         public char EmptyChar { get; set; } = '·';
 
-        public string ProgressFormat { get; set; } = "{0:P1}";
-
         public bool ShowPercentage { get; set; } = true;
 
-        public bool ShowElapsedTime { get; set; } = true;
+        public bool ShowElapsed { get; set; } = true;
 
         public bool ShowEta { get; set; } = true;
 
         public bool ShowSpinner { get; set; } = true;
 
-        public ConsoleColor FillColor { get; set; } = ConsoleColor.Cyan;
+        public ConsoleColor BarColor { get; set; } = ConsoleColor.Green;
+
+        public ConsoleColor DoneColor { get; set; } = ConsoleColor.Cyan;
 
         public ConsoleColor EmptyColor { get; set; } = ConsoleColor.DarkGray;
 
-        public ConsoleColor SpinnerColor { get; set; } = ConsoleColor.Cyan;
+        public ConsoleColor SpinnerColor { get; set; } = ConsoleColor.Yellow;
 
-        public string Prefix { get; set; } = "";
+        public string Prefix { get; set; } = string.Empty;
 
-        public string Suffix { get; set; } = "";
+        public string Suffix { get; set; } = string.Empty;
 
-        public bool LastLineNewline { get; set; } = true;
+        public bool NewlineOnComplete { get; set; } = true;
     }
 
-    public class ProgressBar(int total = 100, ProgressBarOptions? options = null) : IDisposable {
-        private readonly ProgressBarOptions _options = options ?? new ProgressBarOptions();
+    public class ProgressBar(int total = 100, BarConfig? config = null) : IDisposable {
+        private static readonly char[] BrailleFrames = [
+            '|', '/', '─', '\\'
+        ];
 
-        private readonly char[] _spinnerChars = ['|', '/', '─', '\\'];
+        private readonly BarConfig _cfg = config ?? new BarConfig();
 
         private readonly DateTime _startTime = DateTime.Now;
 
@@ -69,13 +71,13 @@ public static class SyncProgressBarUtil {
 
         private bool _disposed;
 
-        private int _spinnerIndex;
+        private int _tick;
 
         public void Dispose()
         {
             if (!_disposed) {
                 if (_current < total) {
-                    Update(total, "Done");
+                    Report(total, "Done");
                 }
 
                 _disposed = true;
@@ -84,84 +86,94 @@ public static class SyncProgressBarUtil {
             GC.SuppressFinalize(this);
         }
 
-        public void Update(double current, string action)
+        public void Update(ProgressReport update)
+        {
+            Report(update.Percent, update.Message);
+        }
+
+        private void Report(double current, string message)
         {
             if (_disposed) {
                 return;
             }
 
             _current = current;
-            _spinnerIndex = (_spinnerIndex + 1) % _spinnerChars.Length;
-            Display(action);
+            _tick++;
+            Render(message);
         }
 
-        private void Display(string action)
+        private void Render(string action)
         {
-            using (Lock.EnterScope()) {
+            using (SyncLock.EnterScope()) {
                 ClearCurrent();
-                var num = _current / total;
-                var num2 = (int)(num * _options.Width);
-                var stringBuilder = new StringBuilder();
-                stringBuilder.Append(_options.Prefix);
-                if (_options.ShowSpinner) {
-                    if (_current < total) {
-                        stringBuilder.Append(GetAnsiColorCode(_options.SpinnerColor));
-                        stringBuilder.Append(_spinnerChars[_spinnerIndex]);
-                        stringBuilder.Append(GetAnsiColorCode(ConsoleColor.White));
-                        stringBuilder.Append(' ');
-                    } else if (_current >= total) {
-                        stringBuilder.Append(GetAnsiColorCode(ConsoleColor.Green));
-                        stringBuilder.Append('✓');
-                        stringBuilder.Append(GetAnsiColorCode(ConsoleColor.White));
-                        stringBuilder.Append(' ');
+
+                var ratio = Math.Clamp(_current / total, 0.0, 1.0);
+                var filled = (int)(ratio * _cfg.Width);
+                var empty = _cfg.Width - filled;
+                var complete = ratio >= 1.0;
+
+                var sb = new StringBuilder(256);
+                sb.Append(_cfg.Prefix);
+
+                // ── Braille spinner / done icon ──
+                if (_cfg.ShowSpinner) {
+                    if (complete) {
+                        sb.Append(Fg(ConsoleColor.Green));
+                        sb.Append('√');
+                    } else {
+                        sb.Append(Fg(_cfg.SpinnerColor));
+                        sb.Append(BrailleFrames[_tick % BrailleFrames.Length]);
                     }
+
+                    sb.Append("\e[0m ");
                 }
 
-                stringBuilder.Append('[');
-                stringBuilder.Append(GetAnsiColorCode(_options.FillColor));
-                stringBuilder.Append(new string(_options.FillChar, num2));
-                stringBuilder.Append(GetAnsiColorCode(_options.EmptyColor));
-                stringBuilder.Append(new string(_options.EmptyChar, _options.Width - num2));
-                stringBuilder.Append(GetAnsiColorCode(ConsoleColor.White));
-                var stringBuilder2 = stringBuilder;
-                var stringBuilder3 = stringBuilder2;
-                var handler = new StringBuilder.AppendInterpolatedStringHandler(2, 1, stringBuilder2);
-                handler.AppendLiteral("] ");
-                handler.AppendFormatted(action);
-                stringBuilder3.Append(ref handler);
-                if (_options.ShowPercentage) {
-                    stringBuilder2 = stringBuilder;
-                    var stringBuilder4 = stringBuilder2;
-                    handler = new StringBuilder.AppendInterpolatedStringHandler(1, 1, stringBuilder2);
-                    handler.AppendLiteral(" ");
-                    handler.AppendFormatted(string.Format(_options.ProgressFormat, num));
-                    stringBuilder4.Append(ref handler);
+                // ── Bar with block-element caps ──
+                sb.Append(Fg(ConsoleColor.DarkGray));
+                sb.Append('▕');
+
+                sb.Append(Fg(complete ? _cfg.DoneColor : _cfg.BarColor));
+                sb.Append(new string(_cfg.FillChar, filled));
+
+                sb.Append(Fg(_cfg.EmptyColor));
+                sb.Append(new string(_cfg.EmptyChar, empty));
+
+                sb.Append(Fg(ConsoleColor.DarkGray));
+                sb.Append('▏');
+                sb.Append("\e[0m");
+
+                // ── Action text ──
+                if (!string.IsNullOrEmpty(action)) {
+                    sb.Append($" {action}");
                 }
 
-                var value = DateTime.Now - _startTime;
-                if (_options.ShowElapsedTime) {
-                    stringBuilder2 = stringBuilder;
-                    var stringBuilder5 = stringBuilder2;
-                    handler = new StringBuilder.AppendInterpolatedStringHandler(10, 1, stringBuilder2);
-                    handler.AppendLiteral(" Elapsed: ");
-                    handler.AppendFormatted(value, "mm\\:ss");
-                    stringBuilder5.Append(ref handler);
+                // ── Percentage ──
+                if (_cfg.ShowPercentage) {
+                    sb.Append($" {ratio:P1}");
                 }
 
-                if (_options.ShowEta && _current > 0) {
-                    var value2 = TimeSpan.FromMilliseconds(value.TotalMilliseconds / _current * (total - _current));
-                    stringBuilder2 = stringBuilder;
-                    var stringBuilder6 = stringBuilder2;
-                    handler = new StringBuilder.AppendInterpolatedStringHandler(6, 1, stringBuilder2);
-                    handler.AppendLiteral(" ETA: ");
-                    handler.AppendFormatted(value2, "mm\\:ss");
-                    stringBuilder6.Append(ref handler);
+                // ── Elapsed [mm:ss] ──
+                var elapsed = DateTime.Now - _startTime;
+                if (_cfg.ShowElapsed) {
+                    sb.Append(Fg(ConsoleColor.DarkGray));
+                    sb.Append($" [{elapsed:mm\\:ss}]");
+                    sb.Append("\e[0m");
                 }
 
-                stringBuilder.Append(_options.Suffix);
-                stringBuilder.Append("\e[0m");
-                Console.Write($"\r{stringBuilder}");
-                if (_current >= total && _options.LastLineNewline) {
+                // ── ETA <mm:ss> ──
+                if (_cfg.ShowEta && _current > 0 && !complete) {
+                    var remaining = TimeSpan.FromMilliseconds(elapsed.TotalMilliseconds / _current * (total - _current));
+                    sb.Append(Fg(_cfg.SpinnerColor));
+                    sb.Append($" <{remaining:mm\\:ss}>");
+                    sb.Append("\e[0m");
+                }
+
+                sb.Append(_cfg.Suffix);
+                sb.Append("\e[0m");
+
+                Console.Write($"\r{sb}");
+
+                if (complete && _cfg.NewlineOnComplete) {
                     Console.WriteLine();
                 }
             }
@@ -174,7 +186,7 @@ public static class SyncProgressBarUtil {
     }
 
     public class ProgressReport {
-        public double Percent { get; init; }
-        public string Message { get; init; } = "";
+        public required double Percent { get; init; }
+        public string Message { get; init; } = string.Empty;
     }
 }
