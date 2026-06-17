@@ -63,13 +63,18 @@ public class Program {
 
     public static string? Init()
     {
-        FantnelInit().Wait(); // 获取基础信息
-        UpdateTools.CheckUpdate(_args).Wait(); // 自更新检测
-        UpdateTools.CheckUpdate(ConnectTest).Wait(); // Fant 更新检测
+        FantnelInit(); // 获取基础信息
+        UpdateTools.CheckUpdate(_args); // 自更新检测
+        UpdateTools.CheckUpdate(ConnectTest); // Fant 更新检测
         return null;
     }
-    
-    private static async Task FantnelInit()
+
+    private static void FantnelInit()
+    {
+        FantnelInitAsync().GetAwaiter().GetResult();
+    }
+
+    private static async Task FantnelInitAsync()
     {
         for (var i = 0; i < 3; i++) {
             try {
@@ -79,7 +84,7 @@ public class Program {
                     return;
                 }
             } catch (Exception e) {
-               Log.Warning("连接服务器失败! 错误信息: {0}", e.Message);
+               Log.Warning("Connect Error: {0}", e.Message);
             }
         }
     }
@@ -87,7 +92,7 @@ public class Program {
     public static EntityInfo GetFant()
     {
         if (_fantnel == null) {
-            Log.Warning("连接服务器失败!");
+            Log.Warning("Connect Error!");
             Thread.Sleep(6000);
             Environment.Exit(1);
         }
@@ -106,65 +111,40 @@ public class Program {
                     FileName = "dotnet",
                     Arguments = arguments,
                 };
-                Log.Warning("运行中: {0} {1}", startInfo.FileName, startInfo.Arguments);
+                Log.Warning("Start: {0} {1}", startInfo.FileName, startInfo.Arguments);
                 _process = Process.Start(startInfo);
                 Thread.Sleep(1400);
-                Connect(port).Wait();
+                Connect(port);
             }
         }
     }
 
-    private static async Task Connect(int port)
+    private static void Connect(int port)
     {
-        SetDescription("正在连接中...");
-        var isError = true;
-        var url = "http://localhost:" + port;
-
-        for (var i = 0; i < 14; i++) {
-            try {
-                Log.Warning("正在连接测试...");
-                var x19 = new X19Extensions(url);
-                var version = await x19.Api<JsonObject>("/api/version");
-                var code = version?["code"];
-                var codeInt = code?.GetValue<int?>();
-                if (codeInt == 1) {
-                    isError = false;
-                    break;
-                }
-            } catch (Exception e) {
-                Log.Warning("连接测试失败: {0}", e.Message);
-            }
-
-            Thread.Sleep(1000);
-        }
-
-        // 失败了
-        if (isError) {
-            SetDescription("连接失败！");
-            return;
-        }
-
-        await ConnectHome(port);
+        ConnectAsync(port).GetAwaiter().GetResult();
     }
 
-    private static async Task ConnectHome(int port)
+
+    private static async Task ConnectAsync(int port)
     {
+        SetDescription("Connecting...");
+
         var isError = true;
         var url = "http://localhost:" + port;
 
         for (var i = 0; i < 8; i++) {
             try {
-                Log.Warning("正在连接测试Home...");
+                Log.Warning("Connect: {0}", url);
                 var x19 = new X19Extensions(url);
                 var home = await x19.Api<JsonObject>("/api/home");
-                var node = home?["crcSalt"];
-                var crcSalt = node?.GetValue<string?>();
-                if (crcSalt is { Length: > 5 }) {
+                var node = home?["versions"];
+                var crcSalt = node?.ToString();
+                if (crcSalt is { Length: > 4 }) {
                     isError = false;
                     break;
                 }
             } catch (Exception e) {
-                Log.Warning("连接测试失败Home: {0}", e.Message);
+                Log.Warning("Connect Error: {0}", e.Message);
             }
 
             Thread.Sleep(1000);
@@ -172,7 +152,7 @@ public class Program {
 
         // 失败了
         if (isError) {
-            SetDescription("连接失败！");
+            SetDescription("Connect Error!");
         } else {
             Window?.Load(url); 
             // Window?.Load("http://localhost:5173/");
@@ -187,7 +167,7 @@ public class Program {
             var json = JsonSerializer.Serialize(response);
             Window?.SendWebMessage(json);
         } catch (Exception ex) {
-            Log.Error("SetDescription 错误：{0}", ex.Message);
+            Log.Error("SetDescription Error: {0}", ex.Message);
         }
     }
 

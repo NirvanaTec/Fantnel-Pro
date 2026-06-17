@@ -1,5 +1,4 @@
 ﻿using System.Runtime.InteropServices;
-using FantnelPro.Entities;
 using FantnelPro.Entities.EntitiesUpdate;
 using Serilog;
 
@@ -13,9 +12,14 @@ public static class UpdateTools {
             Log.Warning("https://npyyds.top/");
         }
     }
-    
+
+    public static void CheckUpdate(string[] args)
+    {
+        CheckUpdateAsync(args).GetAwaiter().GetResult();
+    }
+
     // 自更新检测
-    public static async Task CheckUpdate(string[] args)
+    public static async Task CheckUpdateAsync(string[] args)
     {
         if (!"1.0.1".Equals(Program.GetFant().UpdateVersions)) {
             Log.Error("当前版本已被禁用，请前往官网重新下载！");
@@ -42,7 +46,12 @@ public static class UpdateTools {
         }
     }
 
-    public static async Task CheckUpdate(Action action)
+    public static void CheckUpdate(Action action)
+    {
+        CheckUpdateAsync(action).GetAwaiter().GetResult();
+    }
+
+    private static async Task CheckUpdateAsync(Action action)
     {
         // 检查核心
         await new EntityUpdate {
