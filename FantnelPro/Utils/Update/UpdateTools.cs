@@ -19,7 +19,7 @@ public static class UpdateTools {
     }
 
     // 自更新检测
-    public static async Task CheckUpdateAsync(string[] args)
+    private static async Task CheckUpdateAsync(string[] args)
     {
         if (!"1.0.1".Equals(Program.GetFant().UpdateVersions)) {
             Log.Error("当前版本已被禁用，请前往官网重新下载！");
